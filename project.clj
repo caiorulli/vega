@@ -8,7 +8,7 @@
                  [environ             "1.2.0"]
                  [morse               "0.4.3"]]
 
-  :plugins [[lein-environ "1.1.0"]]
+  :plugins [[lein-environ "1.2.0"]]
 
   :main ^:skip-aot vega.core
   :target-path "target/%s"
