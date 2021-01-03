@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM --platform=linux/arm/v7 java
 
 # Installing leiningen
 RUN curl https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein -o /usr/local/bin/lein \
