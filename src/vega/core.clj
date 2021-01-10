@@ -22,9 +22,14 @@
       (t/send-text token id "Help is on the way")))
 
   (h/message-fn
-    (fn [{{id :id} :chat :as message}]
+    (fn [{:keys [text chat]}]
+      (when (str/includes? (str/lower-case text) "this is the way")
+        (t/send-text token (:id chat) "This is the way."))))
+
+  (h/message-fn
+    (fn [message]
       (println "Intercepted message: " message)
-      (t/send-text token id "I don't do a whole lot ... yet."))))
+      (println "Not doing anything with this message."))))
 
 (defn -main
   [& _args]
