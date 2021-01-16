@@ -1,8 +1,7 @@
-FROM clojure:tools-deps
+FROM java
 ARG telegram_token
 
-COPY . .
-RUN clojure -P
+COPY ./target/vega-1.0.0-SNAPSHOT-standalone.jar .
 ENV telegram_token=$telegram_token
 
-CMD ["clojure", "-X", "vega.core/start"]
+CMD ["java", "-jar", "vega-1.0.0-SNAPSHOT-standalone.jar"]
