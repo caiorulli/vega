@@ -64,3 +64,7 @@
   (println "Starting Vega...")
   (<!! (polling/start token handler
                       {:timeout 4})))
+
+(defn -main
+  []
+  (start {}))
