@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: docker://clojure:tools-deps
+    - name: Install dependencies
+      run: clojure -A:test -P
     - name: Run tests
-      run: ./bin/kaocha
+      run: clojure -M:test -m kaocha/runner
