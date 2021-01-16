@@ -1,0 +1,7 @@
+{:deps
+ {clojure.java-time/clojure.java-time {:mvn/version "0.3.2"}
+  environ/environ                     {:mvn/version "1.2.0"}
+  morse/morse                         {:mvn/version "0.4.3"}}
+
+ :aliases
+ {:test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.732"}}}}}
