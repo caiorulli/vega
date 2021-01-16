@@ -10,20 +10,22 @@
   (:gen-class))
 
 (def token (env :telegram-token))
+(def default-zone (t/zone-id "America/Sao_Paulo"))
 
 (defn now
   []
-  (t/local-date-time))
+  (t/zoned-date-time default-zone))
 
-(def modifier
-  {"thiago"   #(t/plus % (t/hours 3))
-   "pedrotti" #(t/plus % (t/hours 4))
-   "castro"   #(t/minus % (t/hours 1))})
+(def friend->zone
+  {"thiago"   "Europe/Lisbon"
+   "pedrotti" "Europe/Berlin"
+   "castro"   "America/Campo_Grande"})
 
 (defn friend-time
   [friend]
-  (let [modifier-fn (get modifier friend identity)]
-    (-> (now) modifier-fn str)))
+  (let [zone-id (get friend->zone friend default-zone)]
+    (t/format "HH:mm"
+              (t/with-zone-same-instant (now) zone-id))))
 
 (defhandler handler
 
