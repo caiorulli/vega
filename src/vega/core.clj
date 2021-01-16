@@ -5,7 +5,8 @@
             [java-time :as t]
             [morse.api :as api]
             [morse.handlers :refer [defhandler command-fn message-fn]]
-            [morse.polling :as polling])
+            [morse.polling :as polling]
+            [taoensso.timbre :as timbre])
   (:gen-class))
 
 (def token (env :telegram-token))
@@ -51,10 +52,15 @@
       (println "Not doing anything with this message."))))
 
 (defn start
-  [& _args]
+  [{:keys [log-level]
+    :or   {log-level :info}}]
+
+  (timbre/set-level! log-level)
+
   (when (s/blank? token)
-    (println "Please provide token in TELEGRAM_TOKEN environment variable!")
+    (timbre/info "Please provide token in TELEGRAM_TOKEN environment variable!")
     (System/exit 1))
 
   (println "Starting Vega...")
-  (<!! (polling/start token handler)))
+  (<!! (polling/start token handler
+                      {:timeout 4})))
