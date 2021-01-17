@@ -1,6 +1,7 @@
 (ns vega.core
   (:require [clojure.core.async :refer [<!!]]
             [clojure.string :as s]
+            [datahike.api :as d]
             [environ.core :refer [env]]
             [java-time :as t]
             [morse.api :as api]
@@ -11,21 +12,44 @@
 
 (def token (env :telegram-token))
 (def default-zone (t/zone-id "America/Sao_Paulo"))
+(def datahike-config {:store      {:backend :file
+                                   :path    "/tmp/vegadb"}
+                      :initial-tx [{:db/ident       :friend/name
+                                    :db/valueType   :db.type/string
+                                    :db/cardinality :db.cardinality/one}
+                                   {:db/ident       :friend/zone-id
+                                    :db/valueType   :db.type/string
+                                    :db/cardinality :db.cardinality/one}]})
+
+(defn setup-db
+  []
+  (when-not (d/database-exists? datahike-config)
+    (d/create-database datahike-config)
+
+    (let [conn (d/connect datahike-config)]
+      (d/transact conn [#:friend {:name    "thiago"
+                                  :zone-id "Europe/Lisbon"}
+                        #:friend {:name    "pedrotti"
+                                  :zone-id "Europe/Berlin"}
+                        #:friend {:name    "castro"
+                                  :zone-id "America/Campo_Grande"}]))))
 
 (defn now
   []
   (t/zoned-date-time default-zone))
 
-(def friend->zone
-  {"thiago"   "Europe/Lisbon"
-   "pedrotti" "Europe/Berlin"
-   "castro"   "America/Campo_Grande"})
-
 (defn friend-time
   [friend]
-  (let [zone-id (get friend->zone friend default-zone)]
+  (let [conn      (d/connect datahike-config)
+        [zone-id] (d/q '[:find [?z]
+                         :in $ ?name
+                         :where
+                         [?f :friend/name ?name]
+                         [?f :friend/zone-id ?z]]
+                       @conn friend)]
     (t/format "HH:mm"
-              (t/with-zone-same-instant (now) zone-id))))
+              (t/with-zone-same-instant (now) (or zone-id
+                                                  default-zone)))))
 
 (defhandler handler
 
@@ -62,6 +86,8 @@
   (when (s/blank? token)
     (timbre/info "Please provide token in TELEGRAM_TOKEN environment variable!")
     (System/exit 1))
+
+  (setup-db)
 
   (println "Starting Vega...")
   (<!! (polling/start token handler
