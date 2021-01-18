@@ -3,6 +3,7 @@
             [clojure.string :as s]
             [datahike.api :as d]
             [environ.core :refer [env]]
+            [integrant.core :as ig]
             [java-time :as t]
             [morse.api :as api]
             [morse.handlers :refer [defhandler command-fn message-fn]]
@@ -10,29 +11,35 @@
             [taoensso.timbre :as timbre])
   (:gen-class))
 
-(def token (env :telegram-token))
-(def default-zone (t/zone-id "America/Sao_Paulo"))
-(def datahike-config {:store      {:backend :file
-                                   :path    "/tmp/vegadb"}
-                      :initial-tx [{:db/ident       :friend/name
-                                    :db/valueType   :db.type/string
-                                    :db/cardinality :db.cardinality/one}
-                                   {:db/ident       :friend/zone-id
-                                    :db/valueType   :db.type/string
-                                    :db/cardinality :db.cardinality/one}]})
+(def db-config
+  {:store      {:backend :file
+                :path    "/tmp/vegadb"}
+   :initial-tx [{:db/ident       :friend/name
+                 :db/valueType   :db.type/string
+                 :db/cardinality :db.cardinality/one}
+                {:db/ident       :friend/zone-id
+                 :db/valueType   :db.type/string
+                 :db/cardinality :db.cardinality/one}]})
 
-(defn setup-db
-  []
-  (when-not (d/database-exists? datahike-config)
-    (d/create-database datahike-config)
+(def config
+  {:database db-config})
 
-    (let [conn (d/connect datahike-config)]
+(defmethod ig/init-key :database [_ opts]
+  (when-not (d/database-exists? opts)
+    (d/create-database opts)
+
+    (let [conn (d/connect opts)]
       (d/transact conn [#:friend {:name    "thiago"
                                   :zone-id "Europe/Lisbon"}
                         #:friend {:name    "pedrotti"
                                   :zone-id "Europe/Berlin"}
                         #:friend {:name    "castro"
-                                  :zone-id "America/Campo_Grande"}]))))
+                                  :zone-id "America/Campo_Grande"}])))
+
+  opts)
+
+(def token (env :telegram-token))
+(def default-zone (t/zone-id "America/Sao_Paulo"))
 
 (defn now
   []
@@ -40,7 +47,7 @@
 
 (defn friend-time
   [friend]
-  (let [conn      (d/connect datahike-config)
+  (let [conn      (d/connect db-config)
         [zone-id] (d/q '[:find [?z]
                          :in $ ?name
                          :where
@@ -87,7 +94,7 @@
     (timbre/info "Please provide token in TELEGRAM_TOKEN environment variable!")
     (System/exit 1))
 
-  (setup-db)
+  (ig/init config)
 
   (println "Starting Vega...")
   (<!! (polling/start token handler

@@ -1,7 +1,8 @@
 (ns vega.core-test
   (:require [clojure.test :refer [deftest is testing]]
             [java-time :as t]
-            [vega.core :refer [now friend-time default-zone setup-db]]))
+            [vega.core :refer [now friend-time default-zone config]]
+            [integrant.core :as ig]))
 
 (def current-time (t/zoned-date-time (t/local-date-time 2021 1 16 19 0)
                                      default-zone))
@@ -9,7 +10,7 @@
 (deftest friend-time-test
   (with-redefs [now (constantly current-time)]
 
-    (setup-db)
+    (ig/init config)
 
     (testing "Find friends in Brazil"
       (is (= "19:00" (friend-time "caio")))
