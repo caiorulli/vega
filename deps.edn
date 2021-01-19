@@ -9,8 +9,6 @@
 
  :aliases
  {:dev     {:exec-fn vega.core/start}
-  :debug   {:exec-fn   vega.core/start
-            :exec-args {:log-level :trace}}
   :test    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.732"}}
             :main-opts  ["-m" "kaocha.runner"]}
   :uberjar {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.5"}}
