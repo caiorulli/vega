@@ -2,10 +2,13 @@
   (:require [clojure.core.async :refer [<!! chan]]
             [environ.core :refer [env]]
             [integrant.core :as ig]
+            [morse.handlers :refer [handlers command-fn message-fn]]
+            [morse.polling :as polling]
             [taoensso.timbre :as timbre]
-            vega.consumer
-            vega.db
-            vega.morse)
+            [vega.commands :as commands]
+            vega.infrastructure.db
+            vega.infrastructure.telegram
+            [vega.interceptors :as interceptors])
   (:gen-class))
 
 (def config
@@ -38,6 +41,19 @@
 (defmethod ig/init-key :etc/logging [_ {:keys [level]
                                         :or   {level :info}}]
   (timbre/set-level! level))
+
+(defn start-consumer [api db-setup producer-chan]
+  (polling/create-consumer
+   producer-chan
+   (handlers
+    (command-fn "start" (partial commands/start api db-setup))
+    (command-fn "help" (partial commands/help api db-setup))
+    (command-fn "time" (partial commands/time-command api db-setup))
+    (message-fn (partial interceptors/reaction-interceptor api db-setup))
+    (message-fn (partial interceptors/default-interceptor api db-setup)))))
+
+(defmethod ig/init-key :core/consumer [_ {:keys [api db-setup producer]}]
+  (start-consumer api db-setup producer))
 
 (defn start [_]
   (let [{:core/keys [runtime]} (ig/init config)]

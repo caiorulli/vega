@@ -1,7 +1,6 @@
-(ns vega.db
+(ns vega.infrastructure.db
   (:require [datahike.api :as d]
-            [integrant.core :as ig]
-            vega.morse))
+            [integrant.core :as ig]))
 
 (defmethod ig/init-key :db/setup [_ opts]
   (when-not (d/database-exists? opts)

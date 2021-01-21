@@ -1,14 +1,14 @@
-(ns vega.morse
+(ns vega.infrastructure.telegram
   (:require [clojure.string :as s]
             [integrant.core :as ig]
             [morse.api :as api]
             [morse.polling :as polling]
             [taoensso.timbre :as timbre]
-            [vega.protocols.api :as protocols.api]))
+            [vega.protocols.telegram :as telegram]))
 
 (defrecord MorseApi [token]
 
-  protocols.api/TelegramApi
+  telegram/TelegramApi
   (send-text [this chat-id text]
     (api/send-text (:token this) chat-id text)))
 
