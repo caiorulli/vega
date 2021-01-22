@@ -1,5 +1,6 @@
 (ns vega.infrastructure.telegram
   (:require [clojure.string :as s]
+            [clojure.core.async :refer [close!]]
             [integrant.core :as ig]
             [morse.api :as api]
             [morse.polling :as polling]
@@ -26,3 +27,6 @@
 
   (timbre/info "Starting Vega...")
   (polling/create-producer runtime token opts))
+
+(defmethod ig/halt-key! :telegram/producer [_ {:keys [runtime]}]
+  (close! runtime))
