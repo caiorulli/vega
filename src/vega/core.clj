@@ -1,12 +1,10 @@
 (ns vega.core
-  (:require [clojure.core.async :refer [<!! <! chan go-loop]]
+  (:require [clojure.core.async :refer [<! >! chan go-loop sliding-buffer]]
             [environ.core :refer [env]]
             [integrant.core :as ig]
             [morse.handlers :refer [handlers command-fn message-fn]]
             [taoensso.timbre :as timbre]
             [vega.commands :as commands]
-            vega.infrastructure.db
-            vega.infrastructure.telegram
             [vega.interceptors :as interceptors])
   (:gen-class))
 
@@ -41,56 +39,34 @@
                                         :or   {level :info}}]
   (timbre/set-level! level))
 
-(defmacro build-handlers
-  [api db-setup command-map interceptors]
-  (let [command-forms# (map (fn [[word# command#]]
-                              `(command-fn (name ~word#)
-                                 (partial ~command# ~api ~db-setup)))
-                            command-map)
-
-        interceptor-forms# (map (fn [interceptor#]
-                                  `(message-fn (partial ~interceptor# ~api ~db-setup)))
-                                interceptors)]
-
-    `(~handlers ~@command-forms# ~@interceptor-forms#)))
-
-
-
 (defn start-consumer
-  "Modified morse consumer to support message consumption limit,
-  which might be useful for testing."
+  "Modified morse consumer to support completion report through
+  next-chan, which is useful for testing."
 
-  ([api db-setup producer-chan]
-   (start-consumer api db-setup producer-chan nil))
+  [api db-setup producer-chan]
+  (let [handler
+        (handlers
+         (command-fn "start" (partial commands/start api db-setup))
+         (command-fn "help" (partial commands/help api db-setup))
+         (command-fn "time" (partial commands/time-command api db-setup))
+         (message-fn (partial interceptors/reaction api db-setup))
+         (message-fn (partial interceptors/default api db-setup)))
 
-  ([api db-setup producer-chan limit]
-   (let [handler
-         (handlers
-          (command-fn "start" (partial commands/start api db-setup))
-          (command-fn "help" (partial commands/help api db-setup))
-          (command-fn "time" (partial commands/time-command api db-setup))
-          (message-fn (partial interceptors/reaction api db-setup))
-          (message-fn (partial interceptors/default api db-setup)))]
+        next-chan (chan (sliding-buffer 1))]
 
-     (go-loop [messages-consumed 0]
-       (if (and limit (>= messages-consumed limit))
-         :done
+    (go-loop []
 
-         (let [message (<! producer-chan)]
-           (try
-             (handler message)
-             (catch Throwable t
-               (timbre/error "Error processing message" message t)))
+      (when-let [message (<! producer-chan)]
 
-           (recur (if limit (inc messages-consumed) 0))))))))
+        (try
+          (handler message)
+          (>! next-chan message)
+          (catch Throwable t
+            (timbre/error "Error processing message" message t)))
+
+        (recur)))
+
+    next-chan))
 
 (defmethod ig/init-key :core/consumer [_ {:keys [api db-setup producer]}]
   (start-consumer api db-setup producer))
-
-(defn start [_]
-  (let [{:core/keys [runtime]} (ig/init config)]
-    (<!! runtime)))
-
-(defn -main
-  []
-  (start {}))
