@@ -1,5 +1,6 @@
 (ns vega.test-helpers
   (:require [clojure.core.async :refer [<!! >!! chan close!]]
+            [datahike.api :as d]
             [integrant.core :as ig]
             [vega.core :refer [config]]
             vega.infrastructure.db
@@ -18,6 +19,9 @@
 
 (defmethod ig/halt-key! :telegram/producer [_ producer]
   (close! producer))
+
+(defmethod ig/halt-key! :db/setup [_ db-setup]
+  (d/delete-database db-setup))
 
 (def ^:private test-config
   (update-in config

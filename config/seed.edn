@@ -1,0 +1,11 @@
+[#:friend {:name    "thiago"
+           :zone-id "Europe/Lisbon"}
+ #:friend {:name    "pedrotti"
+           :zone-id "Europe/Berlin"}
+ #:friend {:name    "castro"
+           :zone-id "America/Campo_Grande"}
+
+ #:reaction {:trigger  "this is the way"
+             :sentence "This is the way."}
+ #:reaction {:trigger  "lala"
+             :sentence "lalala"}]

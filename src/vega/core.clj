@@ -1,5 +1,6 @@
 (ns vega.core
   (:require [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
+            [clojure.tools.reader.edn :as edn]
             [environ.core :refer [env]]
             [integrant.core :as ig]
             [morse.handlers :refer [handlers command-fn message-fn]]
@@ -22,12 +23,7 @@
 
    :db/setup {:store      {:backend :file
                            :path    "/tmp/vegadb"}
-              :initial-tx [{:db/ident       :friend/name
-                            :db/valueType   :db.type/string
-                            :db/cardinality :db.cardinality/one}
-                           {:db/ident       :friend/zone-id
-                            :db/valueType   :db.type/string
-                            :db/cardinality :db.cardinality/one}]
+              :initial-tx (edn/read-string (slurp "config/schema.edn"))
               :name       "vegadb"}
 
    :etc/logging {:level (keyword (env :log-level))}})
@@ -52,6 +48,7 @@
          (command-fn "start" (partial commands/start api db-setup))
          (command-fn "help" (partial commands/help api db-setup))
          (command-fn "time" (partial commands/time-command api db-setup))
+         (command-fn "reaction" (partial commands/reaction api db-setup))
          (message-fn (partial interceptors/reaction api db-setup))
          (message-fn (partial interceptors/default api db-setup)))
 

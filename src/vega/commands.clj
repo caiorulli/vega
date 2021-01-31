@@ -23,6 +23,17 @@
               (t/with-zone-same-instant (now) (or zone-id
                                                   default-zone)))))
 
+(defn reaction
+  [api db-setup {{id :id} :chat
+                 text     :text}]
+  (let [[_ trigger sentence] (filter (complement s/blank?) (s/split text #"\""))
+
+        conn (d/connect db-setup)]
+
+    (d/transact conn [#:reaction {:trigger  trigger
+                                  :sentence sentence}])
+    (telegram/send-text api id "Reaction added successfully.")))
+
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
   (timbre/info "Bot joined new chat: " chat)
