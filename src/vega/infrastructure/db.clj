@@ -8,7 +8,7 @@
     (d/create-database opts)
 
     (let [conn (d/connect opts)
-          seed (edn/read-string (slurp "config/seed.edn"))]
+          seed (edn/read-string (slurp "resources/seed.edn"))]
       (d/transact conn seed)))
 
   opts)

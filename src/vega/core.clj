@@ -23,7 +23,7 @@
 
    :db/setup {:store      {:backend :file
                            :path    "/tmp/vegadb"}
-              :initial-tx (edn/read-string (slurp "config/schema.edn"))
+              :initial-tx (edn/read-string (slurp "resources/schema.edn"))
               :name       "vegadb"}
 
    :etc/logging {:level (keyword (env :log-level))}})
