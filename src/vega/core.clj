@@ -1,5 +1,5 @@
 (ns vega.core
-  (:require [clojure.core.async :refer [<! >! chan go-loop sliding-buffer]]
+  (:require [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
             [environ.core :refer [env]]
             [integrant.core :as ig]
             [morse.handlers :refer [handlers command-fn message-fn]]
@@ -34,6 +34,9 @@
 
 (defmethod ig/init-key :core/runtime [_ _]
   (chan))
+
+(defmethod ig/halt-key! :core/runtime [_ runtime]
+  (close! runtime))
 
 (defmethod ig/init-key :etc/logging [_ {:keys [level]
                                         :or   {level :info}}]
@@ -70,3 +73,6 @@
 
 (defmethod ig/init-key :core/consumer [_ {:keys [api db-setup producer]}]
   (start-consumer api db-setup producer))
+
+(defmethod ig/halt-key! :core/consumer [_ consumer]
+  (close! consumer))

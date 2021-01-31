@@ -1,5 +1,5 @@
 (ns vega.test-helpers
-  (:require [clojure.core.async :refer [<!! >!! chan]]
+  (:require [clojure.core.async :refer [<!! >!! chan close!]]
             [integrant.core :as ig]
             [vega.core :refer [config]]
             vega.infrastructure.db
@@ -7,14 +7,17 @@
 
 (defrecord MorseMockApi [requests]
   telegram/TelegramApi
-  (send-text [_this chat-id text]
-    (swap! requests conj [chat-id text])))
+  (send-text [_this _chat-id text]
+    (swap! requests conj text)))
 
 (defmethod ig/init-key :telegram/api [_ _]
   (->MorseMockApi (atom [])))
 
 (defmethod ig/init-key :telegram/producer [_ _]
   (chan 4))
+
+(defmethod ig/halt-key! :telegram/producer [_ producer]
+  (close! producer))
 
 (def ^:private test-config
   (update-in config
@@ -27,10 +30,13 @@
   [& messages]
   (let [{producer :telegram/producer
          api      :telegram/api
-         consumer :core/consumer} (ig/init test-config)]
+         consumer :core/consumer
+         :as      system} (ig/init test-config)]
 
     (doseq [message messages]
-      (>!! producer message)
+      (>!! producer {:message {:text message :chat {:id 1}}})
       (<!! consumer))
+
+    (ig/halt! system)
 
     @(:requests api)))
