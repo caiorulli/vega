@@ -10,7 +10,8 @@
  :paths ["src" "resources"]
 
  :aliases
- {:dev     {:exec-fn vega.container/start}
+ {:dev     {:extra-paths ["dev"]
+            :extra-deps  {integrant/repl {:mvn/version "0.3.2"}}}
   :test    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.732"}}
             :main-opts  ["-m" "kaocha.runner"]}
   :uberjar {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.5"}}

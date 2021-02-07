@@ -42,7 +42,12 @@
 (defn help
   [api, _db-setup {{id :id :as chat} :chat}]
   (timbre/info "Help was requested in " chat)
-  (telegram/send-text api id "No."))
+  (telegram/send-text api id "
+Available commands:
+/help - Display this help text.
+/time [friend name] - Displays current time for your friend's timezone. Be sure to check on this only after you bombard him with messages late at night.
+/reaction [trigger] [sentence] - Ensures vega will say [sentence] whenever anyone says [trigger].
+"))
 
 (defn time-command
   [api db-setup {:keys [text chat]}]
