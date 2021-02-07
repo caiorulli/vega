@@ -1,5 +1,6 @@
 (ns vega.core
   (:require [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
+            [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
             [environ.core :refer [env]]
             [integrant.core :as ig]
@@ -23,7 +24,7 @@
 
    :db/setup {:store      {:backend :file
                            :path    "/tmp/vegadb"}
-              :initial-tx (edn/read-string (slurp "resources/schema.edn"))
+              :initial-tx (edn/read-string (slurp (io/resource "schema.edn")))
               :name       "vegadb"}
 
    :etc/logging {:level (keyword (env :log-level))}})
