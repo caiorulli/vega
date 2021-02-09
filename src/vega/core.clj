@@ -50,6 +50,7 @@
          (command-fn "help" (partial commands/help api db-setup))
          (command-fn "time" (partial commands/time-command api db-setup))
          (command-fn "reaction" (partial commands/reaction api db-setup))
+         (command-fn "reaction_list" (partial commands/reaction-list api db-setup))
          (message-fn (partial interceptors/reaction api db-setup))
          (message-fn (partial interceptors/default api db-setup)))
 

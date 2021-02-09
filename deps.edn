@@ -11,7 +11,8 @@
 
  :aliases
  {:dev     {:extra-paths ["dev"]
-            :extra-deps  {integrant/repl {:mvn/version "0.3.2"}}}
+            :extra-deps  {integrant/repl {:mvn/version "0.3.2"}}
+            :main-opts   ["-m" "vega.container"]}
   :test    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.732"}}
             :main-opts  ["-m" "kaocha.runner"]}
   :uberjar {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.5"}}

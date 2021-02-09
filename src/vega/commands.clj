@@ -34,6 +34,24 @@
                                   :sentence sentence}])
     (telegram/send-text api id "Reaction added successfully.")))
 
+(defn reaction-list
+  [api db-setup {{id :id} :chat}]
+  (let [conn         (d/connect db-setup)
+        reactions (d/q '[:find ?t ?s
+                         :where
+                         [?e :reaction/trigger ?t]
+                         [?e :reaction/sentence ?s]]
+                       @conn)
+
+        lines (for [[trigger sentence] reactions]
+                (str "\"" trigger "\""
+                     " => "
+                     "\"" sentence "\"\n"))
+
+        text (apply str (cons "Registered reactions:\n" lines))]
+
+    (telegram/send-text api id text)))
+
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
   (timbre/info "Bot joined new chat: " chat)
