@@ -65,6 +65,7 @@ Available commands:
 /help - Display this help text.
 /time [friend name] - Displays current time for your friend's timezone. Be sure to check on this only after you bombard him with messages late at night.
 /reaction [trigger] [sentence] - Ensures vega will say [sentence] whenever anyone says [trigger].
+/reaction_list - Lists registered reactions.
 "))
 
 (defn time-command
