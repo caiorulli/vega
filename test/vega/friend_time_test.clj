@@ -1,7 +1,7 @@
 (ns vega.friend-time-test
   (:require [clojure.test :refer [deftest is testing]]
             [java-time :as t]
-            [vega.commands :refer [now default-zone]]
+            [vega.core :refer [now default-zone]]
             [vega.test-helpers :refer [vega-process]]))
 
 (def current-time (t/zoned-date-time (t/local-date-time 2021 1 16 19 0)

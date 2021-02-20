@@ -1,14 +1,12 @@
 (ns vega.core
-  (:require [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
+  (:require [clj-http.client :as client]
+            [clojure.core.async :refer [chan close!]]
             [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
+            [java-time :as t]
             [environ.core :refer [env]]
             [integrant.core :as ig]
-            [morse.handlers :refer [handlers command-fn message-fn]]
-            [taoensso.timbre :as timbre]
-            [vega.commands :as commands]
-            [vega.interceptors :as interceptors])
-  (:gen-class))
+            [taoensso.timbre :as timbre]))
 
 (def config
   {:core/runtime  {}
@@ -39,39 +37,26 @@
                                         :or   {level :info}}]
   (timbre/set-level! level))
 
-(defn start-consumer
-  "Modified morse consumer to support completion report through
-  next-chan, which is useful for testing."
+(def default-zone (t/zone-id "America/Sao_Paulo"))
 
-  [api db-setup producer-chan]
-  (let [handler
-        (handlers
-         (command-fn "start" (partial commands/start api db-setup))
-         (command-fn "help" (partial commands/help api db-setup))
-         (command-fn "time" (partial commands/time-command api db-setup))
-         (command-fn "reaction" (partial commands/reaction api db-setup))
-         (command-fn "reaction_list" (partial commands/reaction-list api db-setup))
-         (message-fn (partial interceptors/reaction api db-setup))
-         (message-fn (partial interceptors/default api db-setup)))
+(defn now []
+  (t/zoned-date-time default-zone))
 
-        next-chan (chan (sliding-buffer 1))]
+(defn try-get [url]
+  (try (client/get url)
+       (catch Exception _e {})))
 
-    (go-loop []
+(defn- random-string! []
+  (apply str (take 15 (repeatedly #(rand-nth "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")))))
 
-      (when-let [message (<! producer-chan)]
+(defn blurp!
+  "Shamelessly copied from https://stackoverflow.com/a/8281307/5935298.
+  Makes url into file. Returns file object"
+  [url-string]
+  (let [file-name (str "/tmp/" (random-string!) ".jpg")
+        dest-file (io/file file-name)]
 
-        (try
-          (handler message)
-          (>! next-chan message)
-          (catch Throwable t
-            (timbre/error "Error processing message" message t)))
+    (with-open [src (io/input-stream (io/as-url url-string))]
+      (io/copy src dest-file))
 
-        (recur)))
-
-    next-chan))
-
-(defmethod ig/init-key :core/consumer [_ {:keys [api db-setup producer]}]
-  (start-consumer api db-setup producer))
-
-(defmethod ig/halt-key! :core/consumer [_ consumer]
-  (close! consumer))
+    dest-file))

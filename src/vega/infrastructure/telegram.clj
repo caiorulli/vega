@@ -11,7 +11,10 @@
 
   telegram/TelegramApi
   (send-text [this chat-id text]
-    (api/send-text (:token this) chat-id text)))
+    (api/send-text (:token this) chat-id text))
+
+  (send-photo [this chat-id file]
+    (api/send-photo (:token this) chat-id file)))
 
 (defmethod ig/init-key :telegram/api [_ {:keys [token]}]
   (when (s/blank? token)

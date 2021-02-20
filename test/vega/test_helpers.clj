@@ -2,6 +2,7 @@
   (:require [clojure.core.async :refer [<!! >!! chan close!]]
             [datahike.api :as d]
             [integrant.core :as ig]
+            vega.consumer
             [vega.core :refer [config]]
             vega.infrastructure.db
             [vega.protocols.telegram :as telegram]))
