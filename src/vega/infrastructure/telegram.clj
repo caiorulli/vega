@@ -5,7 +5,9 @@
             [morse.api :as api]
             [morse.polling :as polling]
             [taoensso.timbre :as timbre]
-            [vega.protocols.telegram :as telegram]))
+            [vega.core :refer [blurp!]]
+            [vega.protocols.telegram :as telegram]
+            [clojure.java.io :as io]))
 
 (defrecord MorseApi [token]
 
@@ -13,8 +15,11 @@
   (send-text [this chat-id text]
     (api/send-text (:token this) chat-id text))
 
-  (send-photo [this chat-id file]
-    (api/send-photo (:token this) chat-id file)))
+  (send-photo [this chat-id url]
+    (let [file (blurp! url)]
+
+      (api/send-photo (:token this) chat-id file)
+      (io/delete-file file))))
 
 (defmethod ig/init-key :telegram/api [_ {:keys [token]}]
   (when (s/blank? token)

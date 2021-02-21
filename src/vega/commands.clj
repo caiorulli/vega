@@ -1,12 +1,12 @@
 (ns vega.commands
   (:require [clojure.data.xml :as xml]
-            [clojure.java.io :as io]
             [clojure.string :as s]
             [datahike.api :as d]
             [environ.core :refer [env]]
             [java-time :as t]
             [taoensso.timbre :as timbre]
-            [vega.core :refer [try-get blurp! now default-zone]]
+            [vega.core :refer [now default-zone]]
+            [vega.protocols.reddit :as reddit]
             [vega.protocols.telegram :as telegram]))
 
 (def ^:private default-subreddit
@@ -54,39 +54,31 @@
 
     (telegram/send-text api id text)))
 
-(defn- reddit-rss
-  [subreddit]
-  (let [url (str "https://reddit.com/r/" subreddit ".rss")]
-    (loop [result  (try-get url)
-           backoff 1000]
-      (if (seq result)
-        result
-        (do
-          (timbre/warn "Retrying: fetch rss feed")
-          (Thread/sleep backoff)
-          (recur (try-get url)
-                 (max 8000 (* 2 backoff))))))))
+(defn- with-tag
+  [tag node]
+  (filter #(= (name (:tag %)) tag) node))
 
 (defn- reddit-image-urls
   [rss-feed]
-  (let [xml-map (xml/parse-str (:body rss-feed))
+  (let [xml-map (xml/parse-str rss-feed)
 
         entries (->> (:content xml-map)
-                     (filter #(= (:tag %) :entry))
+                     (with-tag "entry")
                      (mapcat :content)
-                     (filter #(= (:tag %) :content))
-                     (map (comp first :content)))]
+                     (with-tag "content")
+                     (map (comp first :content))
+                     (filter #(s/starts-with? % "<table>")))]
 
     (->> entries
          (map xml/parse-str)
          (map (fn [html]
                 (some-> html
                         :content
-                        first
+                        second ;;first
                         :content
                         second
                         :content
-                        (nth 3 {})
+                        (nth 5 {}) ;; (nth 3 {})
                         :content
                         first
                         :attrs
@@ -94,33 +86,33 @@
          (filter identity))))
 
 (defn reddit
-  [api _db-setup {{id :id} :chat
-                  text     :text}]
+  [api _db-setup reddit-api {{id :id} :chat
+                             text     :text}]
   (let [subreddit (or (second (s/split text #" ")) default-subreddit)
+        rss       (reddit/rss reddit-api subreddit)
+        urls      (reddit-image-urls rss)]
 
-        rss  (reddit-rss subreddit)
-        url  (rand-nth (reddit-image-urls rss))
-        file (blurp! url)]
-
-    (telegram/send-photo api id file)
-    (io/delete-file file)))
+    (when (seq urls)
+      (telegram/send-photo api id (rand-nth urls)))))
 
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
   (timbre/info "Bot joined new chat: " chat)
   (telegram/send-text api id "Vega initialized."))
 
-(defn help
-  [api, _db-setup {{id :id :as chat} :chat}]
-  (timbre/info "Help was requested in " chat)
-  (telegram/send-text api id "
+(def ^:private help-text "
 Available commands:
 /help - Display this help text.
 /time [friend name] - Displays current time for your friend's timezone. Be sure to check on this only after you bombard him with messages late at night.
 /reaction [trigger] [sentence] - Ensures vega will say [sentence] whenever anyone says [trigger].
 /reaction_list - Lists registered reactions.
 /reddit [subreddit?] - Gets random image from specified subreddit. If no subreddit is specified, fetches random wallpaper
-"))
+")
+
+(defn help
+  [api, _db-setup {{id :id :as chat} :chat}]
+  (timbre/info "Help was requested in " chat)
+  (telegram/send-text api id help-text))
 
 (defn time-command
   [api db-setup {:keys [text chat]}]
