@@ -20,7 +20,7 @@
              backoff initial-backoff]
 
         (if (seq result)
-          (let [feed [(:body result)]]
+          (let [feed (:body result)]
             (swap! rss-cache #(assoc % subreddit feed))
             feed)
 
