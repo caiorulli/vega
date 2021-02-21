@@ -5,7 +5,6 @@
             [datahike.api :as d]
             [environ.core :refer [env]]
             [java-time :as t]
-            [pl.danieljanus.tagsoup :as html]
             [taoensso.timbre :as timbre]
             [vega.core :refer [try-get blurp! now default-zone]]
             [vega.protocols.telegram :as telegram]))
@@ -76,21 +75,22 @@
                      (filter #(= (:tag %) :entry))
                      (mapcat :content)
                      (filter #(= (:tag %) :content))
-                     (map (comp first :content)))
+                     (map (comp first :content)))]
 
-        html-map (map html/parse-string entries)]
-
-    (->> html-map
+    (->> entries
+         (map xml/parse-str)
          (map (fn [html]
-                (-> html
-                    (nth 2)
-                    (nth 2)
-                    (nth 2 [])
-                    (nth 3 [])
-                    (nth 5 [])
-                    (nth 2 [])
-                    (nth 1 [])
-                    (get :href nil))))
+                (some-> html
+                        :content
+                        first
+                        :content
+                        second
+                        :content
+                        (nth 3 {})
+                        :content
+                        first
+                        :attrs
+                        :href)))
          (filter identity))))
 
 (defn reddit
