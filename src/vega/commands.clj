@@ -74,11 +74,11 @@
          (map (fn [html]
                 (some-> html
                         :content
-                        second ;;first
+                        second
                         :content
                         second
                         :content
-                        (nth 5 {}) ;; (nth 3 {})
+                        (nth 5 {})
                         :content
                         first
                         :attrs

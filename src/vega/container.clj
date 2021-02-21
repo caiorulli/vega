@@ -8,10 +8,7 @@
             vega.infrastructure.telegram)
   (:gen-class))
 
-(defn start [_]
-  (let [{:core/keys [runtime]} (ig/init config)]
-    (<!! runtime)))
-
 (defn -main
   []
-  (start {}))
+  (let [{:core/keys [runtime]} (ig/init config)]
+    (<!! runtime)))

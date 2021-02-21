@@ -38,5 +38,5 @@
   (timbre/info "Starting Vega...")
   (polling/create-producer runtime token opts))
 
-(defmethod ig/halt-key! :telegram/producer [_ {:keys [runtime]}]
-  (close! runtime))
+(defmethod ig/halt-key! :telegram/producer [_ updates-chan]
+  (close! updates-chan))

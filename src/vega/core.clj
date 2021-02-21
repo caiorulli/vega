@@ -17,7 +17,7 @@
 
    :telegram/producer {:token   (env :telegram-token)
                        :runtime (ig/ref :core/runtime)
-                       :opts    {:timeout 4}}
+                       :opts    {:timeout 10}}
    :telegram/api      {:token (env :telegram-token)}
 
    :reddit/api {}
