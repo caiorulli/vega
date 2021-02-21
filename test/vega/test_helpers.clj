@@ -1,13 +1,14 @@
 (ns vega.test-helpers
   (:require [clojure.core.async :refer [<!! >!! chan close!]]
+            [clojure.java.io :as io]
             [datahike.api :as d]
             [integrant.core :as ig]
             vega.consumer
             [vega.core :refer [config]]
             vega.infrastructure.db
+            [vega.protocols.error-reporting :as error-reporting]
             [vega.protocols.reddit :as reddit]
-            [vega.protocols.telegram :as telegram]
-            [clojure.java.io :as io]))
+            [vega.protocols.telegram :as telegram]))
 
 (defrecord MorseMockApi [requests]
   telegram/TelegramApi
@@ -27,6 +28,14 @@
 
 (defmethod ig/init-key :reddit/api [_ _]
   (->RedditMockApi))
+
+(defrecord SentryMockReporting []
+  error-reporting/ErrorReporting
+  (init! [_] nil)
+  (send-event [_ _] nil))
+
+(defmethod ig/init-key :etc/error-reporting [_ _]
+  (->SentryMockReporting))
 
 (defmethod ig/init-key :telegram/producer [_ _]
   (chan 4))

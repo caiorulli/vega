@@ -6,6 +6,7 @@
   environ/environ                     {:mvn/version "1.2.0"}
   integrant/integrant                 {:mvn/version "0.8.0"}
   io.replikativ/datahike              {:mvn/version "0.3.2"}
+  io.sentry/sentry-clj                {:mvn/version "3.1.138"}
   morse/morse                         {:mvn/version "0.4.3"}
   org.clojure/data.xml                {:mvn/version "0.2.0-alpha6"}}
 

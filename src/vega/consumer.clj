@@ -4,13 +4,16 @@
             [morse.handlers :refer [handlers command-fn message-fn]]
             [taoensso.timbre :as timbre]
             [vega.commands :as commands]
-            [vega.interceptors :as interceptors]))
+            [vega.interceptors :as interceptors]
+            [vega.protocols.error-reporting :as error-reporting]))
 
-(defn start-consumer
-  "Modified morse consumer to support completion report through
-  next-chan, which is useful for testing."
-
-  [api db-setup reddit-api producer-chan]
+;; Modified morse consumer to support completion report through
+;; next-chan, which is useful for testing.
+(defmethod ig/init-key :core/consumer [_ {:keys [api
+                                                 db-setup
+                                                 reddit-api
+                                                 producer
+                                                 error-reporting]}]
   (let [handler
         (handlers
          (command-fn "start" (partial commands/start api db-setup))
@@ -26,23 +29,20 @@
 
     (go-loop []
 
-      (when-let [message (<! producer-chan)]
+      (when-let [message (<! producer)]
 
         (try
           (handler message)
           (>! next-chan message)
           (catch Throwable t
+            (error-reporting/send-event error-reporting
+                                        {:message   {:message "Error processing message"}
+                                         :throwable t})
             (timbre/error "Error processing message" message t)))
 
         (recur)))
 
     next-chan))
-
-(defmethod ig/init-key :core/consumer [_ {:keys [api
-                                                 db-setup
-                                                 reddit-api
-                                                 producer]}]
-  (start-consumer api db-setup reddit-api producer))
 
 (defmethod ig/halt-key! :core/consumer [_ consumer]
   (close! consumer))

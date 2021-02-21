@@ -10,10 +10,11 @@
 
 (def config
   {:core/runtime  {}
-   :core/consumer {:api        (ig/ref :telegram/api)
-                   :db-setup   (ig/ref :db/setup)
-                   :producer   (ig/ref :telegram/producer)
-                   :reddit-api (ig/ref :reddit/api)}
+   :core/consumer {:api             (ig/ref :telegram/api)
+                   :db-setup        (ig/ref :db/setup)
+                   :producer        (ig/ref :telegram/producer)
+                   :reddit-api      (ig/ref :reddit/api)
+                   :error-reporting (ig/ref :etc/error-reporting)}
 
    :telegram/producer {:token   (env :telegram-token)
                        :runtime (ig/ref :core/runtime)
@@ -27,7 +28,8 @@
               :initial-tx (edn/read-string (slurp (io/resource "schema.edn")))
               :name       "vegadb"}
 
-   :etc/logging {:level (keyword (env :log-level))}})
+   :etc/logging         {:level (keyword (env :log-level))}
+   :etc/error-reporting {:dsn (env :sentry-dsn)}})
 
 (defmethod ig/init-key :core/runtime [_ _]
   (chan))
