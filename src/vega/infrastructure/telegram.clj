@@ -15,10 +15,12 @@
   (send-text [this chat-id text]
     (api/send-text (:token this) chat-id text))
 
-  (send-photo [this chat-id url]
+  (send-photo [this chat-id url caption]
     (let [file (blurp! url)]
 
-      (api/send-photo (:token this) chat-id file)
+      (api/send-photo (:token this) chat-id
+                      {:caption caption}
+                      file)
       (io/delete-file file))))
 
 (defmethod ig/init-key :telegram/api [_ {:keys [token]}]

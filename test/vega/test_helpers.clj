@@ -14,7 +14,7 @@
   (send-text [_this _chat-id text]
     (swap! requests conj text))
 
-  (send-photo [_this _chat-id url]
+  (send-photo [_this _chat-id url _caption]
     (swap! requests conj url)))
 
 (defmethod ig/init-key :telegram/api [_ _]

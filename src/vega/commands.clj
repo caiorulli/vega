@@ -93,7 +93,8 @@
         urls      (reddit-image-urls rss)]
 
     (when (seq urls)
-      (telegram/send-photo api id (rand-nth urls)))))
+      (telegram/send-photo api id (rand-nth urls)
+                           (str "Random image from r/" subreddit)))))
 
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
