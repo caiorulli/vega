@@ -1,5 +1,6 @@
 (ns vega.reddit-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.set :as set]
+            [clojure.test :refer [deftest is testing]]
             [vega.test-helpers :refer [vega-process]]))
 
 (def ^:private expected-urls
@@ -29,8 +30,14 @@
     "https://i.redd.it/clr3kjm5qfi61.jpg"})
 
 (deftest reddit-test
-  (let [[url]
-        (vega-process "/reddit")]
+  (let [[url
+         & urls]
+        (vega-process "/reddit"
+                      "/reddit wallpaper 4")]
 
     (testing "URL is correctly extracted"
-      (is (contains? expected-urls url)))))
+      (is (contains? expected-urls url)))
+
+    (testing "Will fire as many urls as required"
+      (is (= (count urls) 4))
+      (is (set/subset? (set urls) expected-urls)))))

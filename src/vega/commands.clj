@@ -89,12 +89,14 @@
   [api _db-setup reddit-api {{id :id} :chat
                              text     :text}]
   (let [subreddit (or (second (s/split text #" ")) default-subreddit)
-        rss       (reddit/rss reddit-api subreddit)
-        urls      (reddit-image-urls rss)]
+        amount    (Integer/parseInt (nth (s/split text #" ") 2 "1"))
+
+        rss  (reddit/rss reddit-api subreddit)
+        urls (reddit-image-urls rss)]
 
     (when (seq urls)
-      (telegram/send-photo api id (rand-nth urls)
-                           (str "Random image from r/" subreddit)))))
+      (doseq [url (take amount (shuffle urls))]
+        (telegram/send-photo api id url (str "Random image from r/" subreddit))))))
 
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
