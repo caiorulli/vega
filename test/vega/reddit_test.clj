@@ -30,8 +30,7 @@
     "https://i.redd.it/clr3kjm5qfi61.jpg"})
 
 (deftest reddit-test
-  (let [[url
-         & urls]
+  (let [[url & urls]
         (vega-process "/reddit"
                       "/reddit wallpaper 4")]
 

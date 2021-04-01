@@ -9,19 +9,20 @@
             [taoensso.timbre :as timbre]))
 
 (def config
-  {:core/runtime  {}
-   :core/consumer {:api             (ig/ref :telegram/api)
+  {:core/consumer {:api             (ig/ref :telegram/api)
                    :db-setup        (ig/ref :db/setup)
-                   :producer        (ig/ref :telegram/producer)
+                   :producer        (ig/ref :core/producer)
                    :reddit-api      (ig/ref :reddit/api)
                    :error-reporting (ig/ref :etc/error-reporting)}
 
-   :telegram/producer {:token   (env :telegram-token)
-                       :runtime (ig/ref :core/runtime)
-                       :opts    {:timeout 10}}
-   :telegram/api      {:token (env :telegram-token)}
+   :core/producer {:api             (ig/ref :telegram/api)
+                   :error-reporting (ig/ref :etc/error-reporting)
+                   :opts            {:timeout 1000}}
 
-   :reddit/api {}
+   :telegram/api {:token   (env :telegram-token)
+                  :limit   100
+                  :timeout 1}
+   :reddit/api   {}
 
    :db/setup {:store      {:backend :file
                            :path    "/tmp/vegadb"}

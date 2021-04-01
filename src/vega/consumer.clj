@@ -29,7 +29,7 @@
 
     (go-loop []
 
-      (when-let [message (<! producer)]
+      (when-let [message (<! (:updates-chan producer))]
 
         (try
           (handler message)

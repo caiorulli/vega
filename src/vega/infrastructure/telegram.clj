@@ -1,15 +1,30 @@
 (ns vega.infrastructure.telegram
-  (:require [clojure.string :as s]
-            [clojure.core.async :refer [close!]]
+  (:require [cheshire.core :as json]
+            [clj-http.client :as client]
+            [clojure.java.io :as io]
+            [clojure.string :as s]
             [integrant.core :as ig]
             [morse.api :as api]
-            [morse.polling :as polling]
             [taoensso.timbre :as timbre]
             [vega.core :refer [blurp!]]
-            [vega.protocols.telegram :as telegram]
-            [clojure.java.io :as io]))
+            [vega.protocols.telegram :as telegram]))
 
-(defrecord MorseApi [token]
+(def base-url "https://api.telegram.org/bot")
+
+(defn- -get-updates
+  ([{:keys [token limit timeout]} offset]
+   (let [url (str base-url token "/getUpdates")
+
+         request {:query-params {:timeout timeout
+                                 :offset  offset
+                                 :limit   limit}}]
+
+     (-> (client/get url request)
+         :body
+         (json/parse-string true)
+         :result))))
+
+(defrecord MorseApi [token limit timeout]
 
   telegram/TelegramApi
   (send-text [this chat-id text]
@@ -21,22 +36,17 @@
       (api/send-photo (:token this) chat-id
                       {:caption caption}
                       file)
-      (io/delete-file file))))
+      (io/delete-file file)))
 
-(defmethod ig/init-key :telegram/api [_ {:keys [token]}]
+  (get-updates [this]
+    (-get-updates this 0))
+
+  (get-updates [this offset]
+    (-get-updates this offset)))
+
+(defmethod ig/init-key :telegram/api [_ {:keys [token limit timeout]}]
   (when (s/blank? token)
     (timbre/info "Please provide token in TELEGRAM_TOKEN environment variable!")
     (System/exit 1))
 
-  (->MorseApi token))
-
-(defmethod ig/init-key :telegram/producer [_ {:keys [runtime token opts]}]
-  (when (s/blank? token)
-    (timbre/info "Please provide token in TELEGRAM_TOKEN environment variable!")
-    (System/exit 1))
-
-  (timbre/info "Starting Vega...")
-  (polling/create-producer runtime token opts))
-
-(defmethod ig/halt-key! :telegram/producer [_ updates-chan]
-  (close! updates-chan))
+  (->MorseApi token limit timeout))

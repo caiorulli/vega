@@ -2,4 +2,7 @@
 
 (defprotocol TelegramApi
   (send-text [api chat-id text])
-  (send-photo [api chat-id url caption]))
+  (send-photo [api chat-id url caption])
+  (get-updates
+    [api]
+    [api offset]))

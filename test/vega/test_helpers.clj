@@ -1,9 +1,10 @@
 (ns vega.test-helpers
-  (:require [clojure.core.async :refer [<!! >!! chan close!]]
+  (:require [clojure.core.async :refer [<!! >!! chan]]
             [clojure.java.io :as io]
             [datahike.api :as d]
             [integrant.core :as ig]
             vega.consumer
+            vega.producer
             [vega.core :refer [config]]
             vega.infrastructure.db
             [vega.protocols.error-reporting :as error-reporting]
@@ -16,7 +17,10 @@
     (swap! requests conj text))
 
   (send-photo [_this _chat-id url _caption]
-    (swap! requests conj url)))
+    (swap! requests conj url))
+
+  (get-updates [_this _opts]
+    (chan)))
 
 (defmethod ig/init-key :telegram/api [_ _]
   (->MorseMockApi (atom [])))
@@ -37,12 +41,6 @@
 (defmethod ig/init-key :etc/error-reporting [_ _]
   (->SentryMockReporting))
 
-(defmethod ig/init-key :telegram/producer [_ _]
-  (chan 4))
-
-(defmethod ig/halt-key! :telegram/producer [_ producer]
-  (close! producer))
-
 (defmethod ig/halt-key! :db/setup [_ db-setup]
   (d/delete-database db-setup))
 
@@ -55,13 +53,13 @@
 
 (defn vega-process
   [& messages]
-  (let [{producer :telegram/producer
-         api      :telegram/api
+  (let [{api      :telegram/api
+         producer :core/producer
          consumer :core/consumer
          :as      system} (ig/init test-config)]
 
     (doseq [message messages]
-      (>!! producer {:message {:text message :chat {:id 1}}})
+      (>!! (:updates-chan producer) {:message {:text message :chat {:id 1}}})
       (<!! consumer))
 
     (ig/halt! system)
