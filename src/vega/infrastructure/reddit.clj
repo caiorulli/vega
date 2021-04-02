@@ -4,9 +4,7 @@
             [vega.core :refer [try-get]]
             [vega.protocols.reddit :as reddit]))
 
-(def ^:const initial-backoff 1000)
-(def ^:const maximum-backoff 8000)
-(def ^:const backoff-growth-rate 2)
+(def ^:const backoff 200)
 
 (defn- -rss
   [{:keys [rss-cache]} subreddit]
@@ -16,8 +14,7 @@
       cached-feed)
 
     (let [url (str "https://reddit.com/r/" subreddit ".rss")]
-      (loop [result  (try-get url)
-             backoff initial-backoff]
+      (loop [result (try-get url)]
 
         (if (seq result)
           (let [feed (:body result)]
@@ -27,9 +24,7 @@
           (do
             (timbre/warn "Retrying: fetch rss feed")
             (Thread/sleep backoff)
-            (recur (try-get url)
-                   (max maximum-backoff
-                        (* backoff-growth-rate backoff)))))))))
+            (recur (try-get url))))))))
 
 (defrecord RedditHttpApi [rss-cache]
   reddit/RedditApi

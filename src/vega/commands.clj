@@ -96,7 +96,7 @@
 
     (when (seq urls)
       (doseq [url (take amount (shuffle urls))]
-        (telegram/send-photo api id url (str "Random image from r/" subreddit))))))
+        (future (telegram/send-photo api id url (str "Random image from r/" subreddit)))))))
 
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
