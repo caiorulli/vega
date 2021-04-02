@@ -1,5 +1,5 @@
 (ns vega.test-helpers
-  (:require [clojure.core.async :refer [<!! >!! chan]]
+  (:require [clojure.core.async :refer [<!!]]
             [clojure.java.io :as io]
             [datahike.api :as d]
             [integrant.core :as ig]
@@ -11,7 +11,7 @@
             [vega.protocols.reddit :as reddit]
             [vega.protocols.telegram :as telegram]))
 
-(defrecord MorseMockApi [requests]
+(defrecord MorseMockApi [requests responses]
   telegram/TelegramApi
   (send-text [_this _chat-id text]
     (swap! requests conj text))
@@ -20,10 +20,12 @@
     (swap! requests conj url))
 
   (get-updates [_this _opts]
-    (chan)))
+    (let [return @responses]
+      (reset! responses [])
+      return)))
 
-(defmethod ig/init-key :telegram/api [_ _]
-  (->MorseMockApi (atom [])))
+(defmethod ig/init-key :telegram/api [_ {:keys [responses]}]
+  (->MorseMockApi (atom []) (atom responses)))
 
 (defrecord RedditMockApi []
   reddit/RedditApi
@@ -44,22 +46,31 @@
 (defmethod ig/halt-key! :db/setup [_ db-setup]
   (d/delete-database db-setup))
 
-(def ^:private test-config
-  (update-in config
-             [:db/setup :store]
-             assoc
-             :backend :mem
-             :id      "test-vegadb"))
+(defn- test-config
+  [responses]
+  (-> config
+      (update-in [:db/setup :store]
+                 assoc
+                 :backend :mem
+                 :id      "test-vegadb")
+      (assoc-in [:telegram/api :responses]
+                responses)
+      (assoc-in [:core/producer :timeout]
+                1)))
 
 (defn vega-process
   [& messages]
-  (let [{api      :telegram/api
-         producer :core/producer
-         consumer :core/consumer
-         :as      system} (ig/init test-config)]
+  (let [updates (map (fn [message]
+                       {:message   {:text message
+                                    :chat {:id 1}}
+                        :update_id 1})
+                     messages)
 
-    (doseq [message messages]
-      (>!! (:updates-chan producer) {:message {:text message :chat {:id 1}}})
+        {api      :telegram/api
+         consumer :core/consumer
+         :as      system} (ig/init (test-config updates))]
+
+    (doseq [_ (range 0 (count updates))]
       (<!! consumer))
 
     (ig/halt! system)

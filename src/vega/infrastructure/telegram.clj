@@ -13,13 +13,11 @@
 
 (defn- -get-updates
   ([{:keys [token limit timeout]} offset]
-   (let [url (str base-url token "/getUpdates")
+   (let [url (str base-url token "/getUpdates")]
 
-         request {:query-params {:timeout timeout
-                                 :offset  offset
-                                 :limit   limit}}]
-
-     (-> (client/get url request)
+     (-> (client/get url {:query-params {:timeout timeout
+                                         :offset  offset
+                                         :limit   limit}})
          :body
          (json/parse-string true)
          :result))))

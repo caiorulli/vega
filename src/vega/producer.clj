@@ -1,5 +1,5 @@
 (ns vega.producer
-  (:require [clojure.core.async :refer [close! chan go-loop poll! put! <! >!]]
+  (:require [clojure.core.async :refer [close! chan go-loop poll! put! >!]]
             [integrant.core :as ig]
             [taoensso.timbre :as timbre]
             [vega.protocols.telegram :as telegram]
@@ -14,9 +14,7 @@
 (defn- fetch-updates
   [api error-reporting offset]
   (try
-    (let [response (telegram/get-updates api offset)
-          [data _] (<! response)]
-      data)
+    (telegram/get-updates api offset)
 
     (catch Throwable t
       (error-reporting/send-event error-reporting
