@@ -2,8 +2,8 @@
   (:require [clojure.core.async :refer [close! chan go-loop poll! put! >!]]
             [integrant.core :as ig]
             [taoensso.timbre :as timbre]
-            [vega.protocols.telegram :as telegram]
-            [vega.protocols.error-reporting :as error-reporting]))
+            [vega.protocols.error-reporting :as error-reporting]
+            [vega.protocols.telegram :as telegram]))
 
 (defn- new-offset
   [updates default]
@@ -18,9 +18,9 @@
 
     (catch Throwable t
       (error-reporting/send-event error-reporting
-                                  {:message   {:message "Error processing message"}
+                                  {:message   "Error fetching updates"
                                    :throwable t})
-      (timbre/error "Error fetching update" t)
+      (timbre/error "Error fetching updates" t)
       [])))
 
 (defn- create-producer
@@ -34,7 +34,7 @@
       (if (poll! stop-chan)
         (close! updates-chan)
 
-        (let [updates (fetch-updates api error-reporting offset)
+        (let [updates     (fetch-updates api error-reporting offset)
               next-offset (if (seq updates)
                             (new-offset updates offset)
                             offset)]

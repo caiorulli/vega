@@ -36,7 +36,8 @@
           (>! next-chan message)
           (catch Throwable t
             (error-reporting/send-event error-reporting
-                                        {:message   {:message "Error processing message"}
+                                        {:message   "Error processing message"
+                                         :extra     message
                                          :throwable t})
             (timbre/error "Error processing message" message t)))
 
