@@ -1,8 +1,8 @@
 (ns vega.interceptors
   (:require [clojure.string :as s]
+            [datahike.api :as d]
             [taoensso.timbre :as timbre]
-            [vega.protocols.telegram :as telegram]
-            [datahike.api :as d]))
+            [vega.protocols.telegram :as telegram]))
 
 (defn reaction
   [api db-setup {:keys [text chat]}]
