@@ -1,0 +1,8 @@
+services:
+  worker:
+    build: .
+    environment:
+      - TELEGRAM_TOKEN
+      - SENTRY_DSN
+      - DEFAULT_SUBREDDIT=wallpaper
+      - LOG_LEVEL=info
