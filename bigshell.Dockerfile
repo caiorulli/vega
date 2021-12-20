@@ -1,4 +1,4 @@
-FROM arm32v7/eclipse-temurin:17
+FROM openjdk:17
 
 COPY ./target/vega-1.0.0-SNAPSHOT-standalone.jar .
 
