@@ -17,3 +17,7 @@ steps:
     image: clojure:tools-deps
     commands:
       - clojure -M:uberjar
+
+  - name: publish
+    image: plugins/docker
+    repo: lutecethecrab/vega
