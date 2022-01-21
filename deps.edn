@@ -6,8 +6,8 @@
   com.taoensso/timbre                 {:mvn/version "5.1.2"}
   environ/environ                     {:mvn/version "1.2.0"}
   integrant/integrant                 {:mvn/version "0.8.0"}
-  io.replikativ/datahike              {:mvn/version "0.4.0"}
-  io.sentry/sentry-clj                {:mvn/version "5.3.159"}
+  io.replikativ/datahike              {:mvn/version "0.4.1480"}
+  io.sentry/sentry-clj                {:mvn/version "5.5.164"}
   morse/morse                         {:mvn/version "0.4.3"}
   org.clojure/data.xml                {:mvn/version "0.2.0-alpha6"}}
 
@@ -17,7 +17,7 @@
  {:dev     {:extra-paths ["dev"]
             :extra-deps  {integrant/repl {:mvn/version "0.3.2"}}}
   :run     {:main-opts ["-m" "vega.container"]}
-  :test    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.60.945"}}
+  :test    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.60.977"}}
             :main-opts  ["-m" "kaocha.runner"]}
   :uberjar {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.5"}}
             :main-opts  ["-m" "cambada.uberjar"
