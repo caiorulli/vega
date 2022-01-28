@@ -12,7 +12,6 @@
   {:core/consumer {:api             (ig/ref :telegram/api)
                    :db-setup        (ig/ref :db/setup)
                    :producer        (ig/ref :core/producer)
-                   :reddit-api      (ig/ref :reddit/api)
                    :error-reporting (ig/ref :etc/error-reporting)}
 
    :core/producer {:api             (ig/ref :telegram/api)
@@ -22,7 +21,6 @@
    :telegram/api {:token   (env :telegram-token)
                   :limit   100
                   :timeout 1}
-   :reddit/api   {}
 
    :db/setup {:store      {:backend :file
                            :path    "/tmp/vegadb"}

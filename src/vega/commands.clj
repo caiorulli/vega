@@ -5,9 +5,11 @@
             [environ.core :refer [env]]
             [java-time :as t]
             [taoensso.timbre :as timbre]
-            [vega.core :refer [now default-zone]]
-            [vega.protocols.reddit :as reddit]
+            [vega.core :refer [now default-zone try-get]]
             [vega.protocols.telegram :as telegram]))
+
+(def ^:const backoff 200)
+(def rss-cache (atom {}))
 
 (def ^:private default-subreddit
   (or (env :default-subreddit) "wallpaper"))
@@ -54,6 +56,27 @@
 
     (telegram/send-text api id text)))
 
+
+(defn- fetch-rss
+  [subreddit]
+  (if-let [cached-feed (get @rss-cache subreddit)]
+    (do
+      (timbre/info "Using cached rss feed.")
+      cached-feed)
+
+    (let [url (str "https://reddit.com/r/" subreddit ".rss")]
+      (loop [result (try-get url)]
+
+        (if (seq result)
+          (let [feed (:body result)]
+            (swap! rss-cache #(assoc % subreddit feed))
+            feed)
+
+          (do
+            (timbre/warn "Retrying: fetch rss feed")
+            (Thread/sleep backoff)
+            (recur (try-get url))))))))
+
 (defn- with-tag
   [tag node]
   (filter #(= (name (:tag %)) tag) node))
@@ -86,12 +109,12 @@
          (filter identity))))
 
 (defn reddit
-  [api _db-setup reddit-api {{id :id} :chat
-                             text     :text}]
+  [api _db-setup {{id :id} :chat
+                  text     :text}]
   (let [subreddit (or (second (s/split text #" ")) default-subreddit)
         amount    (Integer/parseInt (nth (s/split text #" ") 2 "1"))
 
-        rss  (reddit/rss reddit-api subreddit)
+        rss  (fetch-rss subreddit)
         urls (reddit-image-urls rss)]
 
     (when (seq urls)

@@ -1,14 +1,12 @@
 (ns vega.test-helpers
   (:require [clojure.core.async :refer [<!!]]
-            [clojure.java.io :as io]
             [datahike.api :as d]
             [integrant.core :as ig]
             vega.consumer
-            vega.producer
             [vega.core :refer [config]]
             vega.infrastructure.db
+            vega.producer
             [vega.protocols.error-reporting :as error-reporting]
-            [vega.protocols.reddit :as reddit]
             [vega.protocols.telegram :as telegram]))
 
 (defrecord MorseMockApi [requests responses]
@@ -26,14 +24,6 @@
 
 (defmethod ig/init-key :telegram/api [_ {:keys [responses]}]
   (->MorseMockApi (atom []) (atom responses)))
-
-(defrecord RedditMockApi []
-  reddit/RedditApi
-  (rss [_this _subreddit]
-    (slurp (io/resource "test/wallpaper.rss"))))
-
-(defmethod ig/init-key :reddit/api [_ _]
-  (->RedditMockApi))
 
 (defrecord SentryMockReporting []
   error-reporting/ErrorReporting

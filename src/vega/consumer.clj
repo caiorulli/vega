@@ -11,7 +11,6 @@
 ;; next-chan, which is useful for testing.
 (defmethod ig/init-key :core/consumer [_ {:keys [api
                                                  db-setup
-                                                 reddit-api
                                                  producer
                                                  error-reporting]}]
   (let [handler
@@ -21,7 +20,7 @@
          (command-fn "time" (partial commands/time-command api db-setup))
          (command-fn "reaction" (partial commands/reaction api db-setup))
          (command-fn "reaction_list" (partial commands/reaction-list api db-setup))
-         (command-fn "reddit" (partial commands/reddit api db-setup reddit-api))
+         (command-fn "reddit" (partial commands/reddit api db-setup))
          (message-fn (partial interceptors/reaction api db-setup))
          (message-fn (partial interceptors/default api db-setup)))
 

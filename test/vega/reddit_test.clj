@@ -1,7 +1,14 @@
 (ns vega.reddit-test
-  (:require [clojure.set :as set]
+  (:require [clj-http.fake :as fake]
+            [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.test :refer [deftest is testing]]
             [vega.test-helpers :refer [vega-process]]))
+
+(def fake-requests
+  {"https://reddit.com/r/wallpaper.rss"
+   (constantly {:status 200
+                :body   (slurp (io/resource "test/wallpaper.rss"))})})
 
 (def ^:private expected-urls
   #{"https://i.redd.it/g63xqkjk5ni61.jpg"
@@ -31,8 +38,10 @@
 
 (deftest reddit-test
   (let [[url & urls]
-        (vega-process "/reddit"
-                      "/reddit wallpaper 4")]
+        (fake/with-fake-routes-in-isolation
+          fake-requests
+          (vega-process "/reddit"
+                        "/reddit wallpaper 4"))]
 
     (testing "URL is correctly extracted"
       (is (contains? expected-urls url)))

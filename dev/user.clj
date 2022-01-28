@@ -3,7 +3,6 @@
             vega.consumer
             [vega.core :refer [config]]
             vega.infrastructure.db
-            vega.infrastructure.reddit
             vega.infrastructure.sentry
             vega.infrastructure.telegram))
 
