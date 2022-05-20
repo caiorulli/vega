@@ -1,9 +1,9 @@
-(ns vega.reddit-test
-  (:require [clj-http.fake :as fake]
+(ns caiorulli.vega.reddit-test
+  (:require [caiorulli.vega.test-helpers :refer [vega-process]]
+            [clj-http.fake :as fake]
             [clojure.java.io :as io]
             [clojure.set :as set]
-            [clojure.test :refer [deftest is testing]]
-            [vega.test-helpers :refer [vega-process]]))
+            [clojure.test :refer [deftest is testing]]))
 
 (def fake-requests
   {"https://reddit.com/r/wallpaper.rss"

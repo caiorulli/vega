@@ -1,0 +1,17 @@
+(ns caiorulli.vega.container
+  (:require caiorulli.vega.consumer
+            [caiorulli.vega.core :refer [config]]
+            caiorulli.vega.infrastructure.db
+            caiorulli.vega.infrastructure.sentry
+            caiorulli.vega.infrastructure.telegram
+            caiorulli.vega.producer
+            [integrant.core :as ig]
+            [taoensso.timbre :as timbre])
+  (:gen-class))
+
+(defn -main
+  []
+  (ig/init config)
+  (while true
+    (timbre/info "Vega is running. Don't panic.")
+    (Thread/sleep 10000)))

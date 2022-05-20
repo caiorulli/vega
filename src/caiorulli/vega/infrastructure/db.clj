@@ -1,4 +1,4 @@
-(ns vega.infrastructure.db
+(ns caiorulli.vega.infrastructure.db
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
             [datahike.api :as d]

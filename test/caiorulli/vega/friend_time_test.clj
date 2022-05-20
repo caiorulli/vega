@@ -1,8 +1,8 @@
-(ns vega.friend-time-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [java-time :as t]
-            [vega.core :refer [now default-zone]]
-            [vega.test-helpers :refer [vega-process]]))
+(ns caiorulli.vega.friend-time-test
+  (:require [caiorulli.vega.core :refer [now default-zone]]
+            [caiorulli.vega.test-helpers :refer [vega-process]]
+            [clojure.test :refer [deftest is testing]]
+            [java-time :as t]))
 
 (def current-time (t/zoned-date-time (t/local-date-time 2021 1 16 19 0)
                                      default-zone))

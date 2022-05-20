@@ -1,13 +1,13 @@
-(ns vega.infrastructure.telegram
-  (:require [cheshire.core :as json]
+(ns caiorulli.vega.infrastructure.telegram
+  (:require [caiorulli.vega.core :refer [blurp!]]
+            [caiorulli.vega.protocols.telegram :as telegram]
+            [cheshire.core :as json]
             [clj-http.client :as client]
             [clojure.java.io :as io]
             [clojure.string :as s]
             [integrant.core :as ig]
             [morse.api :as api]
-            [taoensso.timbre :as timbre]
-            [vega.core :refer [blurp!]]
-            [vega.protocols.telegram :as telegram]))
+            [taoensso.timbre :as timbre]))
 
 (def base-url "https://api.telegram.org/bot")
 

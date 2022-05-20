@@ -1,4 +1,4 @@
-(ns vega.protocols.error-reporting)
+(ns caiorulli.vega.protocols.error-reporting)
 
 (defprotocol ErrorReporting
   (init! [this])

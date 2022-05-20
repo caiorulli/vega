@@ -1,5 +1,5 @@
 FROM openjdk:17
 
-COPY ./target/vega-1.0.0-SNAPSHOT-standalone.jar .
+COPY ./target/vega-1.0.0-standalone.jar .
 
-CMD ["java", "-jar", "vega-1.0.0-SNAPSHOT-standalone.jar"]
+CMD ["java", "-jar", "vega-1.0.0-standalone.jar"]

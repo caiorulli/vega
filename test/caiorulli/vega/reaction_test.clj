@@ -1,6 +1,6 @@
-(ns vega.reaction-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [vega.test-helpers :refer [vega-process]]))
+(ns caiorulli.vega.reaction-test
+  (:require [caiorulli.vega.test-helpers :refer [vega-process]]
+            [clojure.test :refer [deftest is testing]]))
 
 (deftest reaction-test
   (let [[result-msg

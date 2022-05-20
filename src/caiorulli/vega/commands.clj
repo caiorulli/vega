@@ -1,12 +1,12 @@
-(ns vega.commands
-  (:require [clojure.data.xml :as xml]
+(ns caiorulli.vega.commands
+  (:require [caiorulli.vega.core :refer [now default-zone try-get]]
+            [caiorulli.vega.protocols.telegram :as telegram]
+            [clojure.data.xml :as xml]
             [clojure.string :as s]
             [datahike.api :as d]
             [environ.core :refer [env]]
             [java-time :as t]
-            [taoensso.timbre :as timbre]
-            [vega.core :refer [now default-zone try-get]]
-            [vega.protocols.telegram :as telegram]))
+            [taoensso.timbre :as timbre]))
 
 (def ^:const backoff 200)
 (def rss-cache (atom {}))

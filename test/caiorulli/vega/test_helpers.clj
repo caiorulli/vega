@@ -1,13 +1,13 @@
-(ns vega.test-helpers
-  (:require [clojure.core.async :refer [<!!]]
+(ns caiorulli.vega.test-helpers
+  (:require caiorulli.vega.consumer
+            [caiorulli.vega.core :refer [config]]
+            caiorulli.vega.infrastructure.db
+            caiorulli.vega.producer
+            [caiorulli.vega.protocols.error-reporting :as error-reporting]
+            [caiorulli.vega.protocols.telegram :as telegram]
+            [clojure.core.async :refer [<!!]]
             [datahike.api :as d]
-            [integrant.core :as ig]
-            vega.consumer
-            [vega.core :refer [config]]
-            vega.infrastructure.db
-            vega.producer
-            [vega.protocols.error-reporting :as error-reporting]
-            [vega.protocols.telegram :as telegram]))
+            [integrant.core :as ig]))
 
 (defrecord MorseMockApi [requests responses]
   telegram/TelegramApi

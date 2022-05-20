@@ -1,11 +1,11 @@
-(ns vega.consumer
-  (:require [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
+(ns caiorulli.vega.consumer
+  (:require [caiorulli.vega.commands :as commands]
+            [caiorulli.vega.interceptors :as interceptors]
+            [caiorulli.vega.protocols.error-reporting :as error-reporting]
+            [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
             [integrant.core :as ig]
             [morse.handlers :refer [handlers command-fn message-fn]]
-            [taoensso.timbre :as timbre]
-            [vega.commands :as commands]
-            [vega.interceptors :as interceptors]
-            [vega.protocols.error-reporting :as error-reporting]))
+            [taoensso.timbre :as timbre]))
 
 ;; Modified morse consumer to support completion report through
 ;; next-chan, which is useful for testing.

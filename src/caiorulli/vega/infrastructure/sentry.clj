@@ -1,6 +1,6 @@
-(ns vega.infrastructure.sentry
+(ns caiorulli.vega.infrastructure.sentry
   (:require [sentry-clj.core :as sentry]
-            [vega.protocols.error-reporting :as error-reporting]
+            [caiorulli.vega.protocols.error-reporting :as error-reporting]
             [integrant.core :as ig]))
 
 (defn- -send-event [event]

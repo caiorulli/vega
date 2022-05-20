@@ -1,9 +1,9 @@
-(ns vega.producer
-  (:require [clojure.core.async :refer [close! chan go-loop poll! put! >!]]
+(ns caiorulli.vega.producer
+  (:require [caiorulli.vega.protocols.error-reporting :as error-reporting]
+            [caiorulli.vega.protocols.telegram :as telegram]
+            [clojure.core.async :refer [close! chan go-loop poll! put! >!]]
             [integrant.core :as ig]
-            [taoensso.timbre :as timbre]
-            [vega.protocols.error-reporting :as error-reporting]
-            [vega.protocols.telegram :as telegram]))
+            [taoensso.timbre :as timbre]))
 
 (defn- new-offset
   [updates default]

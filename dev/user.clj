@@ -1,9 +1,9 @@
 (ns user
-  (:require [integrant.repl :refer [clear go halt prep init reset reset-all]]
-            vega.consumer
-            [vega.core :refer [config]]
-            vega.infrastructure.db
-            vega.infrastructure.sentry
-            vega.infrastructure.telegram))
+  (:require caiorulli.vega.consumer
+            [caiorulli.vega.core :refer [config]]
+            caiorulli.vega.infrastructure.db
+            caiorulli.vega.infrastructure.sentry
+            caiorulli.vega.infrastructure.telegram
+            [integrant.repl :refer [clear go halt prep init reset reset-all]]))
 
 (integrant.repl/set-prep! (constantly config))

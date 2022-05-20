@@ -1,4 +1,4 @@
-(ns vega.core
+(ns caiorulli.vega.core
   (:require [clj-http.client :as client]
             [clojure.core.async :refer [chan close!]]
             [clojure.java.io :as io]
