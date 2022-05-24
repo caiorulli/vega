@@ -5,6 +5,7 @@
             caiorulli.vega.infrastructure.sentry
             caiorulli.vega.infrastructure.telegram
             caiorulli.vega.producer
+            caiorulli.vega.scheduler
             [integrant.core :as ig]
             [taoensso.timbre :as timbre])
   (:gen-class))

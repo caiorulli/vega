@@ -1,56 +1,71 @@
 (ns caiorulli.vega.producer
-  (:require [caiorulli.vega.protocols.error-reporting :as error-reporting]
-            [caiorulli.vega.protocols.telegram :as telegram]
-            [clojure.core.async :refer [close! chan go-loop poll! put! >!]]
+  (:require [caiorulli.vega.core :as core]
+            [caiorulli.vega.protocols.error-reporting :as error-reporting]
+            [cheshire.core :as json]
+            [clj-http.client :as client]
+            [clojure.core.async :refer [chan go-loop close! >! <!]]
             [integrant.core :as ig]
             [taoensso.timbre :as timbre]))
 
-(defn- new-offset
-  [updates default]
-  (if (seq updates)
-    (-> updates last :update_id inc)
-    default))
+(def base-url "https://api.telegram.org/bot")
+#_
+(def url (str base-url (environ.core/env :telegram-token) "/getUpdates"))
+#_
+(client/get url {:query-params
+                 {:offset 0
+                  :limit  100}
+                 :throw-exceptions true})
 
 (defn- fetch-updates
-  [api error-reporting offset]
+  [token error-reporting offset]
   (try
-    (telegram/get-updates api offset)
+    (let [url (str base-url token "/getUpdates")]
+      (timbre/info "Making request...")
+      (-> (client/get url {:query-params     {;; :timeout
+                                              :offset  offset
+                                              :limit   100}
+                           :throw-exceptions true})
+          :body
+          (json/parse-string true)
+          :result))
 
     (catch Throwable t
+      (timbre/error "Error fetching updates" t)
       (error-reporting/send-event error-reporting
                                   {:message   "Error fetching updates"
                                    :throwable t})
-      (timbre/error "Error fetching updates" t)
       [])))
 
+(defn- new-offset
+  [updates]
+  (-> updates last :update_id inc))
+
 (defn- create-producer
-  [api error-reporting stop-chan opts]
-  (let [updates-chan (chan)
-        timeout      (:timeout opts)]
+  [token error-reporting scheduler]
+  (let [producer (chan)]
 
     (go-loop [offset 0]
-      (Thread/sleep timeout)
-
-      (if (poll! stop-chan)
-        (close! updates-chan)
-
-        (let [updates     (fetch-updates api error-reporting offset)
+      (when-let [time (<! scheduler)]
+        (timbre/info (str "Fetching updates at " time "..."))
+        (let [updates     (fetch-updates token error-reporting offset)
               next-offset (if (seq updates)
-                            (new-offset updates offset)
+                            (new-offset updates)
                             offset)]
 
           (doseq [update updates]
-            (>! updates-chan update))
+            (timbre/info "Sending update to producer channel!")
+            (>! producer update))
 
+          (timbre/info "Waiting for new scheduler event...")
           (recur next-offset))))
 
-    updates-chan))
+    producer))
 
-(defmethod ig/init-key :core/producer [_ {:keys [api error-reporting opts]}]
+(defmethod ig/init-key ::core/producer [_ {:keys [token
+                                                  error-reporting
+                                                  scheduler]}]
   (timbre/info "Starting producer.")
-  (let [stop-chan (chan)]
-    {:stop-chan    stop-chan
-     :updates-chan (create-producer api error-reporting stop-chan opts)}))
+  (create-producer token error-reporting scheduler))
 
-(defmethod ig/halt-key! :core/producer [_ {:keys [stop-chan]}]
-  (put! stop-chan true))
+(defmethod ig/halt-key! ::core/producer [_ producer]
+  (close! producer))

@@ -1,22 +1,23 @@
 (ns caiorulli.vega.core
   (:require [clj-http.client :as client]
-            [clojure.core.async :refer [chan close!]]
             [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
-            [java-time :as t]
             [environ.core :refer [env]]
             [integrant.core :as ig]
+            [java-time :as t]
             [taoensso.timbre :as timbre]))
 
 (def config
   {:core/consumer {:api             (ig/ref :telegram/api)
                    :db-setup        (ig/ref :db/setup)
-                   :producer        (ig/ref :core/producer)
+                   :producer        (ig/ref ::producer)
                    :error-reporting (ig/ref :etc/error-reporting)}
 
-   :core/producer {:api             (ig/ref :telegram/api)
-                   :error-reporting (ig/ref :etc/error-reporting)
-                   :opts            {:timeout 1000}}
+   ::producer {:token           (env :telegram-token)
+               :error-reporting (ig/ref :etc/error-reporting)
+               :scheduler       (ig/ref ::scheduler)}
+
+   ::scheduler {:recurrence 1}
 
    :telegram/api {:token   (env :telegram-token)
                   :limit   100
@@ -29,12 +30,6 @@
 
    :etc/logging         {:level (keyword (env :log-level))}
    :etc/error-reporting {:dsn (env :sentry-dsn)}})
-
-(defmethod ig/init-key :core/runtime [_ _]
-  (chan))
-
-(defmethod ig/halt-key! :core/runtime [_ runtime]
-  (close! runtime))
 
 (defmethod ig/init-key :etc/logging [_ {:keys [level]
                                         :or   {level :info}}]

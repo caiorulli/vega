@@ -9,7 +9,9 @@
   integrant/integrant                 {:mvn/version "0.8.0"}
   io.replikativ/datahike              {:mvn/version "0.5.1504"}
   io.sentry/sentry-clj                {:mvn/version "5.7.180"}
+  jarohen/chime                       {:mvn/version "0.3.3"}
   morse/morse                         {:mvn/version "0.4.3"}
+  org.clojure/core.async              {:mvn/version "1.5.648"}
   org.clojure/data.xml                {:mvn/version "0.2.0-alpha6"}}
 
  :paths ["src" "resources"]
