@@ -6,13 +6,11 @@
             caiorulli.vega.infrastructure.telegram
             caiorulli.vega.producer
             caiorulli.vega.scheduler
-            [integrant.core :as ig]
-            [taoensso.timbre :as log])
+            [clojure.core.async :refer [<!!]]
+            [integrant.core :as ig])
   (:gen-class))
 
 (defn -main
   []
-  (ig/init config)
-  (while true
-    (log/info "Vega is running. Don't panic.")
-    (Thread/sleep 10000)))
+  (let [{consumer :core/consumer} (ig/init config)]
+    (<!! consumer)))

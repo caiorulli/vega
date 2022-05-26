@@ -2,13 +2,11 @@
   (:require [caiorulli.vega.commands :as commands]
             [caiorulli.vega.interceptors :as interceptors]
             [caiorulli.vega.protocols.error-reporting :as error-reporting]
-            [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
+            [clojure.core.async :refer [<! go-loop]]
             [integrant.core :as ig]
             [morse.handlers :refer [handlers command-fn message-fn]]
             [taoensso.timbre :as log]))
 
-;; Modified morse consumer to support completion report through
-;; next-chan, which is useful for testing.
 (defmethod ig/init-key :core/consumer [_ {:keys [api
                                                  db-setup
                                                  producer
@@ -22,17 +20,12 @@
          (command-fn "reaction_list" (partial commands/reaction-list api db-setup))
          (command-fn "reddit" (partial commands/reddit api db-setup))
          (message-fn (partial interceptors/reaction api db-setup))
-         (message-fn (partial interceptors/default api db-setup)))
-
-        next-chan (chan (sliding-buffer 1))]
+         (message-fn (partial interceptors/default api db-setup)))]
 
     (go-loop []
-
       (when-let [message (<! producer)]
-
         (try
           (handler message)
-          (>! next-chan message)
           (catch Throwable t
             (error-reporting/send-event error-reporting
                                         {:message   "Error processing message"
@@ -40,9 +33,4 @@
                                          :throwable t})
             (log/error "Error processing message" message t)))
 
-        (recur)))
-
-    next-chan))
-
-(defmethod ig/halt-key! :core/consumer [_ consumer]
-  (close! consumer))
+        (recur)))))
