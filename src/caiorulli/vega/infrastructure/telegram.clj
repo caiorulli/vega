@@ -5,7 +5,7 @@
             [clojure.string :as s]
             [integrant.core :as ig]
             [morse.api :as api]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as log]))
 
 (defrecord MorseApi [token limit timeout]
 
@@ -23,7 +23,7 @@
 
 (defmethod ig/init-key :telegram/api [_ {:keys [token limit timeout]}]
   (when (s/blank? token)
-    (timbre/info "Please provide token in TELEGRAM_TOKEN environment variable!")
+    (log/info "Please provide token in TELEGRAM_TOKEN environment variable!")
     (System/exit 1))
 
   (->MorseApi token limit timeout))

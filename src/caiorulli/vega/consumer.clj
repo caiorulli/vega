@@ -5,7 +5,7 @@
             [clojure.core.async :refer [<! >! chan go-loop sliding-buffer close!]]
             [integrant.core :as ig]
             [morse.handlers :refer [handlers command-fn message-fn]]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as log]))
 
 ;; Modified morse consumer to support completion report through
 ;; next-chan, which is useful for testing.
@@ -38,7 +38,7 @@
                                         {:message   "Error processing message"
                                          :extra     message
                                          :throwable t})
-            (timbre/error "Error processing message" message t)))
+            (log/error "Error processing message" message t)))
 
         (recur)))
 

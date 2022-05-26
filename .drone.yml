@@ -16,7 +16,7 @@ steps:
   - name: build
     image: clojure:tools-deps
     commands:
-      - clojure -M:uberjar
+      - clojure -T:build uber
 
   - name: publish
     image: plugins/docker

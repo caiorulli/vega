@@ -1,6 +1,5 @@
 (ns caiorulli.vega.scheduler
-  (:require [caiorulli.vega.core :as core]
-            [chime.core :as chime]
+  (:require [chime.core :as chime]
             [chime.core-async :refer [chime-ch]]
             [clojure.core.async :refer [close!]]
             [integrant.core :as ig]
@@ -12,9 +11,9 @@
   (chime-ch (chime/periodic-seq (Instant/now)
                                 (Duration/ofMinutes recurrence))))
 
-(defmethod ig/init-key ::core/scheduler [_ {:keys [recurrence]}]
+(defmethod ig/init-key :core/scheduler [_ {:keys [recurrence]}]
   (timbre/info "Starting scheduler.")
   (create-chime recurrence))
 
-(defmethod ig/halt-key! ::core/scheduler [_ scheduler]
+(defmethod ig/halt-key! :core/scheduler [_ scheduler]
   (close! scheduler))

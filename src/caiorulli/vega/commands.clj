@@ -6,7 +6,7 @@
             [datahike.api :as d]
             [environ.core :refer [env]]
             [java-time :as t]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as log]))
 
 (def ^:const backoff 200)
 (def rss-cache (atom {}))
@@ -61,7 +61,7 @@
   [subreddit]
   (if-let [cached-feed (get @rss-cache subreddit)]
     (do
-      (timbre/info "Using cached rss feed.")
+      (log/info "Using cached rss feed.")
       cached-feed)
 
     (let [url (str "https://reddit.com/r/" subreddit ".rss")]
@@ -73,7 +73,7 @@
             feed)
 
           (do
-            (timbre/warn "Retrying: fetch rss feed")
+            (log/warn "Retrying: fetch rss feed")
             (Thread/sleep backoff)
             (recur (try-get url))))))))
 
@@ -123,7 +123,7 @@
 
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
-  (timbre/info "Bot joined new chat: " chat)
+  (log/info "Bot joined new chat: " chat)
   (telegram/send-text api id "Vega initialized."))
 
 (def ^:private help-text "
@@ -137,7 +137,7 @@ Available commands:
 
 (defn help
   [api, _db-setup {{id :id :as chat} :chat}]
-  (timbre/info "Help was requested in " chat)
+  (log/info "Help was requested in " chat)
   (telegram/send-text api id help-text))
 
 (defn time-command

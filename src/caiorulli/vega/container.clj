@@ -7,12 +7,12 @@
             caiorulli.vega.producer
             caiorulli.vega.scheduler
             [integrant.core :as ig]
-            [taoensso.timbre :as timbre])
+            [taoensso.timbre :as log])
   (:gen-class))
 
 (defn -main
   []
   (ig/init config)
   (while true
-    (timbre/info "Vega is running. Don't panic.")
+    (log/info "Vega is running. Don't panic.")
     (Thread/sleep 10000)))

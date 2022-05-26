@@ -5,19 +5,19 @@
             [environ.core :refer [env]]
             [integrant.core :as ig]
             [java-time :as t]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as log]))
 
 (def config
   {:core/consumer {:api             (ig/ref :telegram/api)
                    :db-setup        (ig/ref :db/setup)
-                   :producer        (ig/ref ::producer)
+                   :producer        (ig/ref :core/producer)
                    :error-reporting (ig/ref :etc/error-reporting)}
 
-   ::producer {:token           (env :telegram-token)
-               :error-reporting (ig/ref :etc/error-reporting)
-               :scheduler       (ig/ref ::scheduler)}
+   :core/producer {:token           (env :telegram-token)
+                   :error-reporting (ig/ref :etc/error-reporting)
+                   :scheduler       (ig/ref :core/scheduler)}
 
-   ::scheduler {:recurrence 1}
+   :core/scheduler {:recurrence 1}
 
    :telegram/api {:token   (env :telegram-token)
                   :limit   100
@@ -33,7 +33,7 @@
 
 (defmethod ig/init-key :etc/logging [_ {:keys [level]
                                         :or   {level :info}}]
-  (timbre/set-level! level))
+  (log/set-level! level))
 
 (def default-zone (t/zone-id "America/Sao_Paulo"))
 
