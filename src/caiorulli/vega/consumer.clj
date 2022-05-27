@@ -7,11 +7,9 @@
             [morse.handlers :refer [handlers command-fn message-fn]]
             [taoensso.timbre :as log]))
 
-(defmethod ig/init-key :core/consumer [_ {:keys [api
-                                                 db-setup
-                                                 producer
-                                                 error-reporting]}]
-  (let [handler
+(defn create
+  [api db-setup error-reporting producer]
+  (let [handle!
         (handlers
          (command-fn "start" (partial commands/start api db-setup))
          (command-fn "help" (partial commands/help api db-setup))
@@ -34,3 +32,9 @@
             (log/error "Error processing message" message t)))
 
         (recur)))))
+
+(defmethod ig/init-key :core/consumer [_ {:keys [api
+                                                 db-setup
+                                                 producer
+                                                 error-reporting]}]
+  (create api db-setup error-reporting producer))

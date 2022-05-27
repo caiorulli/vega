@@ -1,6 +1,7 @@
 (ns caiorulli.vega.friend-time-test
   (:require [caiorulli.vega.core :refer [now default-zone]]
-            [caiorulli.vega.test-helpers :refer [vega-process]]
+            [caiorulli.vega.test-helpers :as test]
+            [clojure.core.async :refer [chan onto-chan!! <!!]]
             [clojure.test :refer [deftest is testing]]
             [java-time :as t]))
 
@@ -8,23 +9,32 @@
                                      default-zone))
 
 (deftest friend-time-test
-  (with-redefs [now (constantly current-time)]
+  (test/with-context
+    (with-redefs [now (constantly current-time)]
 
-    (let [[caio-msg
-           bruno-msg
-           thiago-msg
-           pedrotti-msg]
-          (vega-process "/time caio"
-                        "/time bruno"
-                        "/time thiago"
-                        "/time pedrotti")]
+      (let [producer (chan)
+            consumer (test/consumer producer)]
+        (onto-chan!! producer [{:text "/time caio"
+                                :chat 1}
+                               {:text "/time bruno"
+                                :chat 1}
+                               {:text "/time thiago"
+                                :chat 1}
+                               {:text "/time pedrotti"
+                                :chat 1}])
+        (<!! consumer))
 
-      (testing "Find friends in Brazil"
-        (is (= "19:00" caio-msg))
-        (is (= "19:00" bruno-msg)))
+      (let [[caio-msg
+             bruno-msg
+             thiago-msg
+             pedrotti-msg] (test/requests)]
 
-      (testing "Find friends in Portugal"
-        (is (= "22:00" thiago-msg)))
+          (testing "Find friends in Brazil"
+            (is (= "19:00" caio-msg))
+            (is (= "19:00" bruno-msg)))
 
-      (testing "Find friends in Germany"
-        (is (= "23:00" pedrotti-msg))))))
+          (testing "Find friends in Portugal"
+            (is (= "22:00" thiago-msg)))
+
+          (testing "Find friends in Germany"
+            (is (= "23:00" pedrotti-msg)))))))

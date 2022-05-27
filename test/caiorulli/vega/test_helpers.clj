@@ -1,68 +1,58 @@
 (ns caiorulli.vega.test-helpers
-  (:require caiorulli.vega.consumer
-            [caiorulli.vega.core :refer [config]]
-            caiorulli.vega.infrastructure.db
-            caiorulli.vega.producer
+  (:require [caiorulli.vega.consumer :as consumer]
             [caiorulli.vega.protocols.error-reporting :as error-reporting]
             [caiorulli.vega.protocols.telegram :as telegram]
-            [clojure.core.async :refer [<!!]]
+            [clojure.java.io :as io]
+            [clojure.tools.reader.edn :as edn]
             [datahike.api :as d]
-            [integrant.core :as ig]))
+            [taoensso.timbre :as log]))
 
-(defrecord MorseMockApi [requests responses]
+(defrecord MorseMockApi [requests]
   telegram/TelegramApi
   (send-text [_this _chat-id text]
     (swap! requests conj text))
 
   (send-photo [_this _chat-id url _caption]
-    (swap! requests conj url))
+    (swap! requests conj url)))
 
-  (get-updates [_this _opts]
-    (let [return @responses]
-      (reset! responses [])
-      return)))
-
-(defmethod ig/init-key :telegram/api [_ {:keys [responses]}]
-  (->MorseMockApi (atom []) (atom responses)))
-
-(defrecord SentryMockReporting []
+(defrecord MockErrorReporting []
   error-reporting/ErrorReporting
   (init! [_] nil)
-  (send-event [_ _] nil))
+  (send-event [_ event]
+    (log/error "Error reported during testing" event)))
 
-(defmethod ig/init-key :etc/error-reporting [_ _]
-  (->SentryMockReporting))
+(def db-config
+  {:initial-tx (-> "schema.edn"
+                   io/resource
+                   slurp
+                   edn/read-string)})
 
-(defmethod ig/halt-key! :db/setup [_ db-setup]
-  (d/delete-database db-setup))
+(def ^:dynamic *api*)
+(def ^:dynamic *error-reporting*)
 
-(defn- test-config
-  [responses]
-  (-> config
-      (update-in [:db/setup :store]
-                 assoc
-                 :backend :mem
-                 :id      "test-vegadb")
-      (assoc-in [:telegram/api :responses]
-                responses)
-      (assoc-in [:core/producer :timeout]
-                1)))
+(defn with-context-fn
+  [inner-fn]
+  (binding [*api*             (->MorseMockApi (atom []))
+            *error-reporting* (->MockErrorReporting)]
+    (d/create-database db-config)
+    (try
+      (inner-fn)
+      (catch Throwable t
+        (log/error "Error in test thread" t)
+        t)
+      (finally
+        (d/delete-database db-config)))))
 
-(defn vega-process
-  [& messages]
-  (let [updates (map (fn [message]
-                       {:message   {:text message
-                                    :chat {:id 1}}
-                        :update_id 1})
-                     messages)
+(defmacro with-context
+  [& body]
+  `(with-context-fn
+     (fn []
+       ~@body)))
 
-        {api      :telegram/api
-         consumer :core/consumer
-         :as      system} (ig/init (test-config updates))]
+(defn consumer
+  [producer]
+  (consumer/create *api* db-config *error-reporting* producer))
 
-    (doseq [_ (range 0 (count updates))]
-      (<!! consumer))
-
-    (ig/halt! system)
-
-    @(:requests api)))
+(defn requests
+  []
+  (-> *api* :requests deref))
