@@ -25,5 +25,5 @@ clojure -M:test
 #### How to build uberjar
 
 ``` sh
-clojure -M:uberjar
+clojure -T:build uber
 ```
