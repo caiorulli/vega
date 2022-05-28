@@ -1,7 +1,6 @@
 (ns caiorulli.vega.friend-time-test
   (:require [caiorulli.vega.core :refer [now default-zone]]
             [caiorulli.vega.test-helpers :as test]
-            [clojure.core.async :refer [chan onto-chan!! <!!]]
             [clojure.test :refer [deftest is testing]]
             [java-time :as t]))
 
@@ -12,17 +11,10 @@
   (test/with-context
     (with-redefs [now (constantly current-time)]
 
-      (let [producer (chan)
-            consumer (test/consumer producer)]
-        (onto-chan!! producer [{:text "/time caio"
-                                :chat 1}
-                               {:text "/time bruno"
-                                :chat 1}
-                               {:text "/time thiago"
-                                :chat 1}
-                               {:text "/time pedrotti"
-                                :chat 1}])
-        (<!! consumer))
+      (test/execute! "/time caio"
+                     "/time bruno"
+                     "/time thiago"
+                     "/time pedrotti")
 
       (let [[caio-msg
              bruno-msg

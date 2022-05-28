@@ -1,5 +1,5 @@
 (ns caiorulli.vega.reddit-test
-  (:require [caiorulli.vega.test-helpers :refer [vega-process]]
+  (:require [caiorulli.vega.test-helpers :as test]
             [clj-http.fake :as fake]
             [clojure.java.io :as io]
             [clojure.set :as set]
@@ -37,15 +37,16 @@
     "https://i.redd.it/clr3kjm5qfi61.jpg"})
 
 (deftest reddit-test
-  (let [[url & urls]
-        (fake/with-fake-routes-in-isolation
-          fake-requests
-          (vega-process "/reddit"
-                        "/reddit wallpaper 4"))]
+  (test/with-context
+    (fake/with-fake-routes-in-isolation fake-requests
+      (test/execute! "/reddit"
+                     "/reddit wallpaper 4"))
 
-    (testing "URL is correctly extracted"
-      (is (contains? expected-urls url)))
+    (let [[url & urls] (test/requests)]
 
-    (testing "Will fire as many urls as required"
-      (is (= (count urls) 4))
-      (is (set/subset? (set urls) expected-urls)))))
+      (testing "URL is correctly extracted"
+        (is (contains? expected-urls url)))
+
+      (testing "Will fire as many urls as required"
+        (is (= (count urls) 4))
+        (is (set/subset? (set urls) expected-urls))))))

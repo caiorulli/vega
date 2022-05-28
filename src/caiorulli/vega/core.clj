@@ -10,8 +10,7 @@
 (def config
   {:core/consumer {:api             (ig/ref :telegram/api)
                    :db-setup        (ig/ref :db/setup)
-                   :producer        (ig/ref :core/producer)
-                   :error-reporting (ig/ref :etc/error-reporting)}
+                   :producer        (ig/ref :core/producer)}
 
    :core/producer {:token           (env :telegram-token)
                    :error-reporting (ig/ref :etc/error-reporting)

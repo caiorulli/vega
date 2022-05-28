@@ -1,14 +1,12 @@
 (ns caiorulli.vega.consumer
   (:require [caiorulli.vega.commands :as commands]
             [caiorulli.vega.interceptors :as interceptors]
-            [caiorulli.vega.protocols.error-reporting :as error-reporting]
             [clojure.core.async :refer [<! go-loop]]
             [integrant.core :as ig]
-            [morse.handlers :refer [handlers command-fn message-fn]]
-            [taoensso.timbre :as log]))
+            [morse.handlers :refer [handlers command-fn message-fn]]))
 
 (defn create
-  [api db-setup error-reporting producer]
+  [api db-setup producer]
   (let [handle!
         (handlers
          (command-fn "start" (partial commands/start api db-setup))
@@ -22,19 +20,10 @@
 
     (go-loop []
       (when-let [message (<! producer)]
-        (try
-          (handler message)
-          (catch Throwable t
-            (error-reporting/send-event error-reporting
-                                        {:message   "Error processing message"
-                                         :extra     message
-                                         :throwable t})
-            (log/error "Error processing message" message t)))
-
+        (handle! message)
         (recur)))))
 
 (defmethod ig/init-key :core/consumer [_ {:keys [api
                                                  db-setup
-                                                 producer
-                                                 error-reporting]}]
-  (create api db-setup error-reporting producer))
+                                                 producer]}]
+  (create api db-setup producer))
