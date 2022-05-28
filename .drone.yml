@@ -3,11 +3,6 @@ type: docker
 name: default
 
 steps:
-  - name: download-deps
-    image: clojure:tools-deps
-    commands:
-      - clojure -P
-
   - name: test
     image: clojure:tools-deps
     commands:
@@ -17,7 +12,3 @@ steps:
     image: clojure:tools-deps
     commands:
       - clojure -T:build uber
-
-  - name: publish
-    image: plugins/docker
-    repo: lutecethecrab/vega
