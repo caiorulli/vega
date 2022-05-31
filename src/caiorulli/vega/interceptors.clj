@@ -19,5 +19,4 @@
 
 (defn default
   [_api _db-setup message]
-  (log/info (str "Intercepted message: " message))
-  (log/info "Not doing anything with this message."))
+  (log/info (str "Intercepted message: " message)))

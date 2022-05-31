@@ -1,6 +1,6 @@
 (ns caiorulli.vega.commands
-  (:require [caiorulli.vega.core :refer [now default-zone try-get]]
-            [caiorulli.vega.protocols.telegram :as telegram]
+  (:require [caiorulli.vega.protocols.telegram :as telegram]
+            [caiorulli.vega.utils :refer [now default-zone try-get]]
             [clojure.data.xml :as xml]
             [clojure.string :as s]
             [datahike.api :as d]

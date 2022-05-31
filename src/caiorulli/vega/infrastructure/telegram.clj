@@ -1,6 +1,6 @@
 (ns caiorulli.vega.infrastructure.telegram
-  (:require [caiorulli.vega.core :refer [blurp!]]
-            [caiorulli.vega.protocols.telegram :as telegram]
+  (:require [caiorulli.vega.protocols.telegram :as telegram]
+            [caiorulli.vega.utils :refer [blurp!]]
             [clojure.java.io :as io]
             [clojure.string :as s]
             [integrant.core :as ig]

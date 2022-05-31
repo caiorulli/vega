@@ -24,11 +24,11 @@
                         (json/parse-string true)
                         :result)]
 
-        (log/debug "Updating offset...")
         (when-let [next-offset (new-offset updates)]
+          (log/debug (str "Updating offset to: " next-offset))
           (reset! offset next-offset))
 
-        (log/debug "Forwarding updates...")
+        (log/debug (str "Forwarding updates: " updates))
         (onto-chan! producer updates)))))
 
 (defn- handle-error

@@ -1,6 +1,6 @@
 (ns caiorulli.vega.friend-time-test
-  (:require [caiorulli.vega.core :refer [now default-zone]]
-            [caiorulli.vega.test-helpers :as test]
+  (:require [caiorulli.vega.test-helpers :as test]
+            [caiorulli.vega.utils :refer [now default-zone]]
             [clojure.test :refer [deftest is testing]]
             [java-time :as t]))
 

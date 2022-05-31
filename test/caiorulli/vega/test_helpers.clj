@@ -1,9 +1,8 @@
 (ns caiorulli.vega.test-helpers
   (:require [caiorulli.vega.consumer :as consumer]
             [caiorulli.vega.protocols.telegram :as telegram]
+            [caiorulli.vega.utils :refer [edn-from-resource]]
             [clojure.core.async :refer [chan onto-chan!! <!!]]
-            [clojure.java.io :as io]
-            [clojure.tools.reader.edn :as edn]
             [datahike.api :as d]
             [taoensso.timbre :as log]))
 
@@ -14,10 +13,6 @@
 
   (send-photo [_this _chat-id url _caption]
     (swap! requests conj url)))
-
-(defn- edn-from-resource
-  [filename]
-  (-> filename io/resource slurp edn/read-string))
 
 (def db-config
   {:initial-tx (concat
