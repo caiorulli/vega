@@ -1,13 +1,13 @@
 (ns caiorulli.vega.test-helpers
   (:require [caiorulli.vega.consumer :as consumer]
-            [caiorulli.vega.protocols.telegram :as telegram]
+            [caiorulli.vega.protocols :as protocols]
             [caiorulli.vega.utils :refer [edn-from-resource]]
             [clojure.core.async :refer [chan onto-chan!! <!!]]
             [datahike.api :as d]
             [taoensso.timbre :as log]))
 
 (defrecord MorseMockApi [requests]
-  telegram/TelegramApi
+  protocols/TelegramApi
   (send-text [_this _chat-id text]
     (swap! requests conj text))
 

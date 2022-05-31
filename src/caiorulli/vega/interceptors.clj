@@ -1,5 +1,5 @@
 (ns caiorulli.vega.interceptors
-  (:require [caiorulli.vega.protocols.telegram :as telegram]
+  (:require [caiorulli.vega.protocols :as protocols]
             [clojure.string :as s]
             [datahike.api :as d]
             [taoensso.timbre :as log]))
@@ -15,7 +15,7 @@
 
     (doseq [trigger (keys reactions)]
       (when (and text (s/includes? (s/lower-case text) trigger))
-        (telegram/send-text api (:id chat) (get reactions trigger))))))
+        (protocols/send-text api (:id chat) (get reactions trigger))))))
 
 (defn default
   [_api _db-setup message]

@@ -1,5 +1,5 @@
 (ns caiorulli.vega.commands
-  (:require [caiorulli.vega.protocols.telegram :as telegram]
+  (:require [caiorulli.vega.protocols :as protocols]
             [caiorulli.vega.utils :refer [now default-zone try-get]]
             [clojure.data.xml :as xml]
             [clojure.string :as s]
@@ -36,7 +36,7 @@
 
     (d/transact conn [#:reaction {:trigger  trigger
                                   :sentence sentence}])
-    (telegram/send-text api id "Reaction added successfully.")))
+    (protocols/send-text api id "Reaction added successfully.")))
 
 (defn reaction-list
   [api db-setup {{id :id} :chat}]
@@ -54,7 +54,7 @@
 
         text (apply str (cons "Registered reactions:\n" lines))]
 
-    (telegram/send-text api id text)))
+    (protocols/send-text api id text)))
 
 
 (defn- fetch-rss
@@ -119,12 +119,12 @@
 
     (when (seq urls)
       (doseq [url (take amount (shuffle urls))]
-        (future (telegram/send-photo api id url (str "Random image from r/" subreddit)))))))
+        (future (protocols/send-photo api id url (str "Random image from r/" subreddit)))))))
 
 (defn start
   [api _db-setup {{id :id :as chat} :chat}]
   (log/info "Bot joined new chat: " chat)
-  (telegram/send-text api id "Vega initialized."))
+  (protocols/send-text api id "Vega initialized."))
 
 (def ^:private help-text "
 Available commands:
@@ -138,9 +138,9 @@ Available commands:
 (defn help
   [api, _db-setup {{id :id :as chat} :chat}]
   (log/info "Help was requested in " chat)
-  (telegram/send-text api id help-text))
+  (protocols/send-text api id help-text))
 
 (defn time-command
   [api db-setup {:keys [text chat]}]
-  (telegram/send-text api (:id chat) (friend-time db-setup
+  (protocols/send-text api (:id chat) (friend-time db-setup
                                                   (second (s/split text #" ")))))

@@ -11,9 +11,9 @@
   (chime-ch (chime/periodic-seq (Instant/now)
                                 (Duration/ofMinutes recurrence))))
 
-(defmethod ig/init-key :core/scheduler [_ {:keys [recurrence]}]
+(defmethod ig/init-key ::worker [_ {:keys [recurrence]}]
   (timbre/info "Starting scheduler.")
   (create-chime recurrence))
 
-(defmethod ig/halt-key! :core/scheduler [_ scheduler]
+(defmethod ig/halt-key! ::worker [_ scheduler]
   (close! scheduler))

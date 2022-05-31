@@ -19,7 +19,7 @@
  :aliases
  {:dev   {:extra-paths ["dev"]
           :extra-deps  {integrant/repl {:mvn/version "0.3.2"}}}
-  :run   {:main-opts ["-m" "caiorulli.vega.container"]}
+  :run   {:main-opts ["-m" "caiorulli.vega.core"]}
   :test  {:extra-deps {lambdaisland/kaocha {:mvn/version "1.66.1034"}}
           :main-opts  ["-m" "kaocha.runner"]}
   :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.2" :git/sha "ba1a2bf"}}

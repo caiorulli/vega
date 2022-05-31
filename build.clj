@@ -22,4 +22,4 @@
   (b/uber {:class-dir class-dir
            :uber-file uber-file
            :basis     basis
-           :main      'caiorulli.vega.container}))
+           :main      'caiorulli.vega.core}))

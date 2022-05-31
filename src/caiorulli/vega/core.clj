@@ -1,37 +1,50 @@
 (ns caiorulli.vega.core
-  (:require [clojure.java.io :as io]
+  (:require [caiorulli.vega.consumer :as consumer]
+            [caiorulli.vega.datahike :as db]
+            [caiorulli.vega.producer :as producer]
+            [caiorulli.vega.scheduler :as scheduler]
+            [caiorulli.vega.sentry :as sentry]
+            [caiorulli.vega.telegram :as telegram]
+            [clojure.core.async :refer [<!!]]
+            [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
             [environ.core :refer [env]]
             [integrant.core :as ig]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log])
+  (:gen-class))
 
 (def ^:const datahike-path
   "/var/lib/datahike")
 
 (def config
-  {:core/consumer {:api             (ig/ref :telegram/api)
-                   :db-setup        (ig/ref :db/setup)
-                   :producer        (ig/ref :core/producer)}
+  {::consumer/worker {:api      (ig/ref ::telegram/api)
+                      :db-setup (ig/ref ::db/setup)
+                      :producer (ig/ref ::producer/worker)}
 
-   :core/producer {:token           (env :telegram-token)
-                   :error-reporting (ig/ref :etc/error-reporting)
-                   :scheduler       (ig/ref :core/scheduler)}
+   ::producer/worker {:token           (env :telegram-token)
+                      :error-reporting (ig/ref ::sentry/error-reporting)
+                      :scheduler       (ig/ref ::scheduler/worker)}
 
-   :core/scheduler {:recurrence 1}
+   ::scheduler/worker {:recurrence 1}
 
-   :telegram/api {:token   (env :telegram-token)
-                  :limit   100
-                  :timeout 1}
+   ::telegram/api {:token   (env :telegram-token)
+                   :limit   100
+                   :timeout 1}
 
-   :db/setup {:store      {:backend :file
-                           :path    datahike-path}
-              :initial-tx (edn/read-string (slurp (io/resource "schema.edn")))
-              :name       "vegadb"}
+   ::db/setup {:store      {:backend :file
+                            :path    datahike-path}
+               :initial-tx (edn/read-string (slurp (io/resource "schema.edn")))
+               :name       "vegadb"}
 
-   :etc/logging         {:level (keyword (env :log-level))}
-   :etc/error-reporting {:dsn (env :sentry-dsn)}})
+   ::sentry/error-reporting {:dsn (env :sentry-dsn)}
 
-(defmethod ig/init-key :etc/logging [_ {:keys [level]
+   ::logging {:level (keyword (env :log-level))}})
+
+(defmethod ig/init-key ::logging [_ {:keys [level]
                                         :or   {level :info}}]
   (log/set-level! level))
 
+(defn -main
+  []
+  (let [{consumer ::consumer/worker} (ig/init config)]
+    (<!! consumer)))

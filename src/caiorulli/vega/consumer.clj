@@ -28,7 +28,7 @@
 
         (log/warn "Consumer shutting down.")))))
 
-(defmethod ig/init-key :core/consumer [_ {:keys [api
-                                                 db-setup
-                                                 producer]}]
+(defmethod ig/init-key ::worker [_ {:keys [api
+                                           db-setup
+                                           producer]}]
   (create api db-setup producer))

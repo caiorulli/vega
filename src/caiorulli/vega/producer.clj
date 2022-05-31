@@ -1,5 +1,5 @@
 (ns caiorulli.vega.producer
-  (:require [caiorulli.vega.protocols.error-reporting :as error-reporting]
+  (:require [caiorulli.vega.protocols :as protocols]
             [cheshire.core :as json]
             [clj-http.client :as client]
             [clj-http.conn-mgr :as cm]
@@ -34,9 +34,9 @@
 (defn- handle-error
   [error-reporting]
   (fn [e]
-    (error-reporting/send-event error-reporting
-                                {:message   "Error fetching updates"
-                                 :throwable e})))
+    (protocols/send-event error-reporting
+                          {:message   "Error fetching updates"
+                           :throwable e})))
 
 (defn- create-producer
   [token error-reporting scheduler]
@@ -70,11 +70,11 @@
 
     producer))
 
-(defmethod ig/init-key :core/producer [_ {:keys [token
-                                                  error-reporting
-                                                  scheduler]}]
+(defmethod ig/init-key ::worker [_ {:keys [token
+                                           error-reporting
+                                           scheduler]}]
   (log/info "Starting producer.")
   (create-producer token error-reporting scheduler))
 
-(defmethod ig/halt-key! :core/producer [_ producer]
+(defmethod ig/halt-key! ::worker [_ producer]
   (close! producer))

@@ -1,5 +1,5 @@
-(ns caiorulli.vega.infrastructure.sentry
-  (:require [caiorulli.vega.protocols.error-reporting :as error-reporting]
+(ns caiorulli.vega.sentry
+  (:require [caiorulli.vega.protocols :as protocols]
             [integrant.core :as ig]
             [sentry-clj.core :as sentry]
             [taoensso.timbre :as log]))
@@ -20,14 +20,14 @@
 
 (defrecord SentryReporting [dsn]
 
-  error-reporting/ErrorReporting
+  protocols/ErrorReporting
   (init! [{:keys [dsn]}]
     (-init! dsn))
 
   (send-event [_this event]
     (-send-event event)))
 
-(defmethod ig/init-key :etc/error-reporting [_ {:keys [dsn]}]
+(defmethod ig/init-key ::error-reporting [_ {:keys [dsn]}]
   (let [sentry (->SentryReporting dsn)]
-    (error-reporting/init! sentry)
+    (protocols/init! sentry)
     sentry))

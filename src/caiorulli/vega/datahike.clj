@@ -1,10 +1,10 @@
-(ns caiorulli.vega.infrastructure.db
+(ns caiorulli.vega.datahike
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
             [datahike.api :as d]
             [integrant.core :as ig]))
 
-(defmethod ig/init-key :db/setup [_ opts]
+(defmethod ig/init-key ::setup [_ opts]
   (when-not (d/database-exists? opts)
     (d/create-database opts)
 
