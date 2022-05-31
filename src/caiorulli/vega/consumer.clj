@@ -3,7 +3,8 @@
             [caiorulli.vega.interceptors :as interceptors]
             [clojure.core.async :refer [<! go-loop]]
             [integrant.core :as ig]
-            [morse.handlers :refer [handlers command-fn message-fn]]))
+            [morse.handlers :refer [handlers command-fn message-fn]]
+            [taoensso.timbre :as log]))
 
 (defn create
   [api db-setup producer]
@@ -19,9 +20,13 @@
          (message-fn (partial interceptors/default api db-setup)))]
 
     (go-loop []
-      (when-let [message (<! producer)]
-        (handle! message)
-        (recur)))))
+      (if-let [message (<! producer)]
+        (do
+          (log/debug (str "Handling message: " message))
+          (handle! message)
+          (recur))
+
+        (log/warn "Consumer shutting down.")))))
 
 (defmethod ig/init-key :core/consumer [_ {:keys [api
                                                  db-setup

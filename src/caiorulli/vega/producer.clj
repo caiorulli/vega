@@ -29,7 +29,7 @@
           (reset! offset next-offset))
 
         (log/debug (str "Forwarding updates: " updates))
-        (onto-chan! producer updates)))))
+        (onto-chan! producer updates false)))))
 
 (defn- handle-error
   [error-reporting]
@@ -64,7 +64,9 @@
           (log/debug "Waiting for new scheduler event...")
           (recur))
 
-        (close! producer)))
+        (do
+          (log/warn "Producer shutting down.")
+          (close! producer))))
 
     producer))
 
