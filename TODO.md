@@ -1,7 +1,7 @@
 # TODO
 
 ## Setup
-- [ ] Setup persistent datahike db
+- [x] Setup persistent datahike db
 - [ ] Remove morse handlers, and make my own (so I can autogenerate the help command)
 - [ ] Move to property tests
 - [ ] Spec messages
