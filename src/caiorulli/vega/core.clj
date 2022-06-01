@@ -2,6 +2,7 @@
   (:require [caiorulli.vega.consumer :as consumer]
             [caiorulli.vega.datahike :as db]
             [caiorulli.vega.producer :as producer]
+            [caiorulli.vega.prometheus :as prometheus]
             [caiorulli.vega.scheduler :as scheduler]
             [caiorulli.vega.sentry :as sentry]
             [caiorulli.vega.telegram :as telegram]
@@ -35,6 +36,9 @@
                             :path    datahike-path}
                :initial-tx (edn/read-string (slurp (io/resource "schema.edn")))
                :name       "vegadb"}
+
+   ::prometheus/registry  {}
+   ::prometheus/webserver {:registry (ig/ref ::prometheus/registry)}
 
    ::sentry/error-reporting {:dsn (env :sentry-dsn)}
 
