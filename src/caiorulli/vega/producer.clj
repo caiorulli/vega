@@ -38,16 +38,21 @@
                           {:message   "Error fetching updates"
                            :throwable e})))
 
-(defn- create-producer
-  [token error-reporting scheduler]
-  (let [producer (chan 4)
-        offset   (atom 0)
-        cm       (cm/make-reusable-async-conn-manager {})
-        url      (str base-url token "/getUpdates")]
+(defn- make-offset
+  []
+  (let [offset (atom 0)]
 
     (add-watch offset :log
                (fn [_ _ _ new-state]
                  (log/debug (str "Offset updated to " new-state "."))))
+    offset))
+
+(defn- create-producer
+  [token error-reporting scheduler]
+  (let [producer (chan 4)
+        offset   (make-offset)
+        cm       (cm/make-reusable-async-conn-manager {})
+        url      (str base-url token "/getUpdates")]
 
     (go-loop []
       (if-let [time (<! scheduler)]
