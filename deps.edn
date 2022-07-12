@@ -12,6 +12,7 @@
   io.sentry/sentry-clj                {:mvn/version "5.7.180"}
   io.prometheus/simpleclient_hotspot  {:mvn/version "0.15.0"}
   jarohen/chime                       {:mvn/version "0.3.3"}
+  medley/medley                       {:mvn/version "1.4.0"}
   morse/morse                         {:mvn/version "0.4.3"}
   org.clojure/core.async              {:mvn/version "1.5.648"}
   org.clojure/data.xml                {:mvn/version "0.2.0-alpha6"}}
@@ -23,7 +24,8 @@
           :extra-deps  {integrant/repl {:mvn/version "0.3.2"}}}
   :run   {:main-opts ["-m" "caiorulli.vega.core"]}
   :test  {:extra-paths ["test"]
-          :extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+          :extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                        org.clojure/test.check               {:mvn/version "1.1.1"}}
           :main-opts   ["-m" "cognitect.test-runner"]
           :exec-fn     cognitect.test-runner.api/test}
   :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.2" :git/sha "ba1a2bf"}}

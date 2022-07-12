@@ -1,32 +1,21 @@
 (ns caiorulli.vega.friend-time-test
-  (:require [caiorulli.vega.test-helpers :as test]
-            [caiorulli.vega.utils :refer [now default-zone]]
-            [clojure.test :refer [deftest is testing]]
-            [java-time :as t]))
+  (:require [caiorulli.vega.domain.friend :as friend]
+            [caiorulli.vega.test-helpers :as test]
+            [clojure.spec.alpha :as s]
+            [clojure.test.check.clojure-test :refer [defspec]]
+            [clojure.test.check.properties :as prop]
+            [datahike.api :as d]
+            [medley.core :refer [map-keys]]))
 
-(def current-time (t/zoned-date-time (t/local-date-time 2021 1 16 19 0)
-                                     default-zone))
+(defn- friend-ns->friend
+  [k]
+  (keyword "friend" (name k)))
 
-(deftest friend-time-test
-  (test/with-context
-    (with-redefs [now (constantly current-time)]
+(defspec friend-time 100
+  (prop/for-all [friend (s/gen ::friend/friend)]
+    (test/with-context
+      (d/transact (d/connect test/db-config)
+                  [(map-keys friend-ns->friend friend)])
 
-      (test/execute! "/time caio"
-                     "/time bruno"
-                     "/time thiago"
-                     "/time pedrotti")
-
-      (let [[caio-msg
-             bruno-msg
-             thiago-msg
-             pedrotti-msg] (test/requests)]
-
-          (testing "Find friends in Brazil"
-            (is (= "19:00" caio-msg))
-            (is (= "19:00" bruno-msg)))
-
-          (testing "Find friends in Portugal"
-            (is (= "22:00" thiago-msg)))
-
-          (testing "Find friends in Germany"
-            (is (= "23:00" pedrotti-msg)))))))
+      (let [res (test/exec! (str "/time " (::friend/name friend)))]
+        (re-matches #"\d{2}:\d{2}" res)))))

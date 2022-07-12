@@ -2,7 +2,7 @@
   (:require [caiorulli.vega.consumer :as consumer]
             [caiorulli.vega.protocols :as protocols]
             [caiorulli.vega.utils :refer [edn-from-resource]]
-            [clojure.core.async :refer [chan onto-chan!! <!!]]
+            [clojure.core.async :refer [chan onto-chan!! <!! >!! close!]]
             [datahike.api :as d]
             [taoensso.timbre :as log]))
 
@@ -66,3 +66,13 @@
         consumer (consumer producer)]
     (onto-chan!! producer (map message messages))
     (<!! consumer)))
+
+(defn exec!
+  [msg]
+  (let [producer (chan)
+        consumer (consumer producer)]
+    (>!! producer (message msg))
+    (close! producer)
+    (<!! consumer))
+
+  (first (requests)))
