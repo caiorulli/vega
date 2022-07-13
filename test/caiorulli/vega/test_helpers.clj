@@ -55,6 +55,10 @@
   []
   (-> *api* :requests deref))
 
+(defn reset-requests!
+  []
+  (reset! (:requests *api*) []))
+
 (defn- message
   [text]
   {:message {:text text
@@ -69,6 +73,9 @@
 
 (defn exec!
   [msg]
+  (when-not *api*
+    (throw (ex-info "Context not set!" {})))
+
   (let [producer (chan)
         consumer (consumer producer)]
     (>!! producer (message msg))
