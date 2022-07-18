@@ -14,7 +14,7 @@
                                 @conn))]
 
     (doseq [trigger (keys reactions)]
-      (when (and text (s/includes? (s/lower-case text) trigger))
+      (when (and text (s/includes? text trigger))
         (protocols/send-text api (:id chat) (get reactions trigger))))))
 
 (defn default
