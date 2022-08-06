@@ -12,3 +12,5 @@ pom.xml.asc
 
 .envrc
 .cpcache/
+/result
+/.direnv

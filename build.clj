@@ -2,12 +2,9 @@
   (:require [clojure.tools.build.api :as b]))
 
 (def lib 'caiorulli/vega)
-(def version
-  #_(format "0.0.%s" (b/git-count-revs nil))
-  "1.0.0")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
-(def uber-file (format "target/%s-%s-standalone.jar" (name lib) version))
+(def uber-file (format "target/%s.jar" (name lib)))
 
 (defn clean [_]
   (b/delete {:path "target"}))
