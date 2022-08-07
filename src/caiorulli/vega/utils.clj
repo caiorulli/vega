@@ -1,13 +1,10 @@
 (ns caiorulli.vega.utils
-  (:require [java-time :as t]
-            [clj-http.client :as client]
+  (:require [clj-http.client :as client]
             [clojure.java.io :as io]
-            [clojure.tools.reader.edn :as edn]))
+            [clojure.tools.reader.edn :as edn]
+            [tick.core :as t]))
 
-(def default-zone (t/zone-id "America/Sao_Paulo"))
-
-(defn now []
-  (t/zoned-date-time default-zone))
+(def default-zone (t/zone "America/Sao_Paulo"))
 
 (defn try-get [url]
   (try (client/get url)

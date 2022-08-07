@@ -1,12 +1,12 @@
 (ns caiorulli.vega.commands
   (:require [caiorulli.vega.protocols :as protocols]
-            [caiorulli.vega.utils :refer [now default-zone try-get]]
+            [caiorulli.vega.utils :refer [default-zone try-get]]
             [clojure.data.xml :as xml]
             [clojure.string :as s]
             [datahike.api :as d]
             [environ.core :refer [env]]
-            [java-time :as t]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [tick.core :as t]))
 
 (def ^:const backoff 200)
 (def rss-cache (atom {}))
@@ -24,8 +24,7 @@
                          [?f :friend/zone-id ?z]]
                        @conn friend)]
     (t/format "HH:mm"
-              (t/with-zone-same-instant (now) (or zone-id
-                                                  default-zone)))))
+              (t/in (t/now) (or zone-id default-zone)))))
 
 (defn reaction
   [api db-setup {{id :id} :chat
